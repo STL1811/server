@@ -45,9 +45,9 @@ namespace caspar { namespace html {
 std::unique_ptr<executor> g_cef_executor;
 
 void caspar_log(
-		const CefRefPtr<CefBrowser>& browser,
-		boost::log::trivial::severity_level level,
-		const std::string& message)
+	const CefRefPtr<CefBrowser>& browser,
+	boost::log::trivial::severity_level level,
+	const std::string& message)
 {
 	if (browser)
 	{
@@ -57,71 +57,6 @@ void caspar_log(
 		browser->SendProcessMessage(PID_BROWSER, msg);
 	}
 }
-
-class animation_handler : public CefV8Handler
-{
-private:
-	std::vector<CefRefPtr<CefV8Value>> callbacks_;
-	boost::timer since_start_timer_;
-public:
-	CefRefPtr<CefBrowser> browser;
-	std::function<CefRefPtr<CefV8Context>()> get_context;
-
-	bool Execute(
-			const CefString& name,
-			CefRefPtr<CefV8Value> object,
-			const CefV8ValueList& arguments,
-			CefRefPtr<CefV8Value>& retval,
-			CefString& exception) override
-	{
-		if (!CefCurrentlyOn(TID_RENDERER))
-			return false;
-
-		if (arguments.size() < 1 || !arguments.at(0)->IsFunction())
-		{
-			return false;
-		}
-
-		callbacks_.push_back(arguments.at(0));
-
-		if (browser)
-			browser->SendProcessMessage(PID_BROWSER, CefProcessMessage::Create(
-					ANIMATION_FRAME_REQUESTED_MESSAGE_NAME));
-
-		return true;
-	}
-
-	void tick()
-	{
-		if (!get_context)
-			return;
-
-		auto context = get_context();
-
-		if (!context)
-			return;
-
-		if (!CefCurrentlyOn(TID_RENDERER))
-			return;
-
-		std::vector<CefRefPtr<CefV8Value>> callbacks;
-		callbacks_.swap(callbacks);
-
-		CefV8ValueList callback_args;
-		CefTime timestamp;
-		timestamp.Now();
-		callback_args.push_back(CefV8Value::CreateDouble(
-				since_start_timer_.elapsed() * 1000.0));
-
-		BOOST_FOREACH(auto callback, callbacks)
-		{
-			callback->ExecuteFunctionWithContext(
-					context, callback, callback_args);
-		}
-	}
-
-	IMPLEMENT_REFCOUNTING(animation_handler);
-};
 
 class remove_handler : public CefV8Handler
 {
@@ -133,18 +68,18 @@ public:
 	}
 
 	bool Execute(
-			const CefString& name,
-			CefRefPtr<CefV8Value> object,
-			const CefV8ValueList& arguments,
-			CefRefPtr<CefV8Value>& retval,
-			CefString& exception) override
+		const CefString& name,
+		CefRefPtr<CefV8Value> object,
+		const CefV8ValueList& arguments,
+		CefRefPtr<CefV8Value>& retval,
+		CefString& exception) override
 	{
 		if (!CefCurrentlyOn(TID_RENDERER))
 			return false;
 
 		browser_->SendProcessMessage(
-				PID_BROWSER,
-				CefProcessMessage::Create(REMOVE_MESSAGE_NAME));
+			PID_BROWSER,
+			CefProcessMessage::Create(REMOVE_MESSAGE_NAME));
 
 		return true;
 	}
@@ -152,117 +87,59 @@ public:
 	IMPLEMENT_REFCOUNTING(remove_handler);
 };
 
+class browser_application : public CefApp
+{
+public:
+	void OnBeforeCommandLineProcessing(
+		const CefString& process_type,
+		CefRefPtr<CefCommandLine> command_line) override {
+		if (!process_type.empty())
+			return;
+
+		command_line->AppendSwitch("disable-web-security");
+		command_line->AppendSwitch("enable-media-stream");
+		command_line->AppendSwitchWithValue("js-flags", "--expose-gc");
+
+
+		// Possible required flags.
+		command_line->AppendSwitch("disable-gpu");
+		command_line->AppendSwitch("disable-gpu-compositing");
+		command_line->AppendSwitch("enable-begin-frame-scheduling");
+	}
+
+private:
+	IMPLEMENT_REFCOUNTING(browser_application);
+};
+
 class renderer_application : public CefApp, CefRenderProcessHandler
 {
-	std::vector<std::pair<CefRefPtr<animation_handler>, CefRefPtr<CefV8Context>>> contexts_per_handlers_;
-	//std::map<CefRefPtr<animation_handler>, CefRefPtr<CefV8Context>> contexts_per_handlers_;
 public:
 	CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() override
 	{
 		return this;
 	}
 
-	CefRefPtr<CefV8Context> get_context(
-			const CefRefPtr<animation_handler>& handler)
-	{
-		BOOST_FOREACH(auto& ctx, contexts_per_handlers_)
-		{
-			if (ctx.first == handler)
-				return ctx.second;
-		}
-
-		return nullptr;
-	}
-
 	void OnContextCreated(
-			CefRefPtr<CefBrowser> browser,
-			CefRefPtr<CefFrame> frame,
-			CefRefPtr<CefV8Context> context) override
+		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
+		CefRefPtr<CefV8Context> context) override
 	{
 		caspar_log(browser, boost::log::trivial::trace,
-				"context for frame "
-				+ boost::lexical_cast<std::string>(frame->GetIdentifier())
-				+ " created");
-
-		CefRefPtr<animation_handler> handler = new animation_handler;
-		contexts_per_handlers_.push_back(std::make_pair(handler, context));
-		auto handler_ptr = handler.get();
-
-		handler->browser = browser;
-		handler->get_context = [this, handler_ptr]
-		{
-			return get_context(handler_ptr);
-		};
+			"context for frame "
+			+ boost::lexical_cast<std::string>(frame->GetIdentifier())
+			+ " created");
 
 		auto window = context->GetGlobal();
-
+		
 		auto function = CefV8Value::CreateFunction(
-				"requestAnimationFrame",
-				handler.get());
+			"remove",
+			new remove_handler(browser));
 		window->SetValue(
-				"requestAnimationFrame",
-				function,
-				V8_PROPERTY_ATTRIBUTE_NONE);
-
-		function = CefV8Value::CreateFunction(
-				"remove",
-				new remove_handler(browser));
-		window->SetValue(
-				"remove",
-				function,
-				V8_PROPERTY_ATTRIBUTE_NONE);
+			"remove",
+			function,
+			V8_PROPERTY_ATTRIBUTE_NONE);
 	}
-
-	void OnContextReleased(
-			CefRefPtr<CefBrowser> browser,
-			CefRefPtr<CefFrame> frame,
-			CefRefPtr<CefV8Context> context)
-	{
-		auto removed = boost::remove_if(
-				contexts_per_handlers_, [&](const std::pair<
-						CefRefPtr<animation_handler>,
-						CefRefPtr<CefV8Context>>& c)
-		{
-			return c.second->IsSame(context);
-		});
-
-		if (removed != contexts_per_handlers_.end())
-			caspar_log(browser, boost::log::trivial::trace,
-					"context for frame "
-					+ boost::lexical_cast<std::string>(frame->GetIdentifier())
-					+ " released");
-		else
-			caspar_log(browser, boost::log::trivial::warning,
-					"context for frame "
-					+ boost::lexical_cast<std::string>(frame->GetIdentifier())
-					+ " released, but not found");
-	}
-
-	void OnBrowserDestroyed(CefRefPtr<CefBrowser> browser) override
-	{
-		contexts_per_handlers_.clear();
-	}
-
-	bool OnProcessMessageReceived(
-			CefRefPtr<CefBrowser> browser,
-			CefProcessId source_process,
-			CefRefPtr<CefProcessMessage> message) override
-	{
-		if (message->GetName().ToString() == TICK_MESSAGE_NAME)
-		{
-			BOOST_FOREACH(auto& handler, contexts_per_handlers_)
-			{
-				handler.first->tick();
-			}
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
+	
 	IMPLEMENT_REFCOUNTING(renderer_application);
 };
 
@@ -274,13 +151,12 @@ bool init()
 		return false;
 
 	core::register_producer_factory(html::create_producer);
-	
+
 	g_cef_executor.reset(new executor(L"cef"));
 	g_cef_executor->invoke([&]
 	{
 		CefSettings settings;
-		//settings.windowless_rendering_enabled = true;
-		CefInitialize(main_args, settings, nullptr, nullptr);
+		CefInitialize(main_args, settings, new browser_application, nullptr);
 	});
 	g_cef_executor->begin_invoke([&]
 	{
@@ -336,7 +212,7 @@ public:
 		return promise_.get_future();
 	}
 
-	IMPLEMENT_REFCOUNTING(shutdown_task);
+	IMPLEMENT_REFCOUNTING(cef_task);
 };
 
 void invoke(const std::function<void()>& func)
@@ -360,6 +236,7 @@ boost::unique_future<void> begin_invoke(const std::function<void()>& func)
 		return task->future();
 	else
 		BOOST_THROW_EXCEPTION(caspar_exception()
-				<< msg_info("[cef_executor] Could not post task"));
+			<< msg_info("[cef_executor] Could not post task"));
 }
+
 }}

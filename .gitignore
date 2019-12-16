@@ -87,3 +87,8 @@
 /modules/newtek/bin
 /modules/newtek/tmp
 /dependencies/cef
+/.vs
+/modules/SharedMem/tmp/Debug/*.pch
+/modules/SharedMem/tmp
+/modules/SharedMem
+/shell/*.log

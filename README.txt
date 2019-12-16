@@ -104,4 +104,5 @@ LICENSING
 CasparCG is distributed under the GNU General Public License GPLv3 or
 higher, please see LICENSE.TXT for details.
 
+The included software is provided as-is by Sveriges Televison AB.
 More information is available at http://casparcg.com/

@@ -47,6 +47,7 @@
 #include <boost/circular_buffer.hpp>
 #include <boost/foreach.hpp>
 #include <boost/thread.hpp>
+#include <boost/optional.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include <tbb/atomic.h>
@@ -55,6 +56,7 @@
 #include <boost/assign.hpp>
 
 #include <algorithm>
+#include <tuple>
 #include <vector>
 
 #if defined(_MSC_VER)
@@ -102,6 +104,8 @@ struct configuration
 	aspect_ratio	aspect;	
 	bool			vsync;
 	bool			borderless;
+	boost::optional<int> width;
+	boost::optional<int> height;
 
 	configuration()
 		: name(L"Screen consumer")
@@ -220,8 +224,8 @@ public:
 		
 		screen_x_		= devmode.dmPosition.x;
 		screen_y_		= devmode.dmPosition.y;
-		screen_width_	= config_.windowed ? square_width_ : devmode.dmPelsWidth;
-		screen_height_	= config_.windowed ? square_height_ : devmode.dmPelsHeight;
+		screen_width_	= config_.width.get_value_or(config_.windowed ? square_width_ : devmode.dmPelsWidth);
+		screen_height_	= config_.height.get_value_or(config_.windowed ? square_height_ : devmode.dmPelsHeight);
 
 		is_running_ = true;
 		current_presentation_age_ = 0;
@@ -622,6 +626,8 @@ safe_ptr<core::frame_consumer> create_consumer(const boost::property_tree::wptre
 	config.auto_deinterlace	= ptree.get(L"auto-deinterlace", config.auto_deinterlace);
 	config.vsync			= ptree.get(L"vsync", config.vsync);
 	config.borderless       = ptree.get(L"borderless", config.borderless);
+	config.width			= ptree.get_optional<int>(L"width");
+	config.height			= ptree.get_optional<int>(L"height");
 
 	auto stretch_str = ptree.get(L"stretch", L"default");
 	if(stretch_str == L"uniform")

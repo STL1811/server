@@ -58,8 +58,8 @@
 
 #include "html.h"
 
-#pragma comment (lib, "libcef.lib")
-#pragma comment (lib, "libcef_dll_wrapper.lib")
+#pragma comment(lib, "libcef.lib")
+#pragma comment(lib, "libcef_dll_wrapper.lib")
 
 namespace caspar {
 	namespace html {
@@ -81,9 +81,9 @@ namespace caspar {
 			tbb::atomic<bool>						loaded_;
 			tbb::atomic<bool>						removed_;
 			tbb::atomic<bool>						animation_frame_requested_;
-			std::queue<safe_ptr<core::basic_frame>>	frames_;
-			mutable boost::mutex					frames_mutex_;
-
+			tbb::atomic<float>						onPaintRate_;
+			tbb::concurrent_bounded_queue<safe_ptr<core::basic_frame>> frames_;
+						
 			safe_ptr<core::basic_frame>				last_frame_;
 			safe_ptr<core::basic_frame>				last_progressive_frame_;
 			mutable boost::mutex					last_frame_mutex_;
@@ -104,19 +104,35 @@ namespace caspar {
 				graph_->set_color("browser-tick-time", diagnostics::color(0.1f, 1.0f, 0.1f));
 				graph_->set_color("tick-time", diagnostics::color(0.0f, 0.6f, 0.9f));
 				graph_->set_color("late-frame", diagnostics::color(0.6f, 0.3f, 0.9f));
+				graph_->set_color("dropped-frame", diagnostics::color(0.6f, 0.3f, 0.9f));
 				graph_->set_text(print());
 				diagnostics::register_graph(graph_);
 
+				onPaintRate_ = 0;
 				loaded_ = false;
 				removed_ = false;
 				animation_frame_requested_ = false;
-				executor_.begin_invoke([&]{ update(); });
+
+				frames_.set_capacity(4);
+
+				{
+					core::pixel_format_desc pixel_desc;
+					pixel_desc.pix_fmt = core::pixel_format::bgra;
+					pixel_desc.planes.push_back(
+						core::pixel_format_desc::plane(frame_factory_->get_video_format_desc().width, frame_factory_->get_video_format_desc().height, 4));
+					auto frame = frame_factory_->create_frame(this, pixel_desc);
+					std::memset(frame->image_data().begin(), 0, pixel_desc.planes[0].size);
+					frame->commit();
+
+					while (frames_.try_push(frame))
+						;
+				}
 			}
 
 			safe_ptr<core::basic_frame> receive()
 			{
 				auto frame = last_frame();
-				executor_.begin_invoke([&]{ update(); });
+				update();
 				return frame;
 			}
 
@@ -168,6 +184,11 @@ namespace caspar {
 				return removed_;
 			}
 
+			std::wstring print() const
+			{
+				return L"html[" + url_ + L"] " + boost::lexical_cast<std::wstring>(onPaintRate_.load());
+			}
+
 		private:
 
 			bool GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect)
@@ -190,6 +211,8 @@ namespace caspar {
 						* frame_factory_->get_video_format_desc().fps
 						* frame_factory_->get_video_format_desc().field_count
 						* 0.5);
+				onPaintRate_.store(static_cast<float>(paint_timer_.elapsed()));
+				graph_->set_text(print());
 				paint_timer_.restart();
 				CASPAR_ASSERT(CefCurrentlyOn(TID_UI));
 
@@ -201,19 +224,14 @@ namespace caspar {
 				auto frame = frame_factory_->create_frame(this, pixel_desc);
 				fast_memcpy(frame->image_data().begin(), buffer, width * height * 4);
 				frame->commit();
-
-				lock(frames_mutex_, [&]
+				
+				while (!frames_.try_push(frame))
 				{
-					frames_.push(frame);
+					safe_ptr<core::basic_frame> dummy;
+					frames_.pop(dummy);
+					graph_->set_tag("dropped-frame");
+				}
 
-					size_t max_in_queue = frame_factory_->get_video_format_desc().field_count;
-
-					while (frames_.size() > max_in_queue)
-					{
-						frames_.pop();
-						graph_->set_tag("dropped-frame");
-					}
-				});
 				graph_->set_value("copy-time", copy_timer.elapsed()
 						* frame_factory_->get_video_format_desc().fps
 						* frame_factory_->get_video_format_desc().field_count
@@ -271,15 +289,7 @@ namespace caspar {
 			{
 				auto name = message->GetName().ToString();
 
-				if (name == ANIMATION_FRAME_REQUESTED_MESSAGE_NAME)
-				{
-					CASPAR_LOG(trace)
-							<< print() << L" Requested animation frame";
-					animation_frame_requested_ = true;
-
-					return true;
-				}
-				else if (name == REMOVE_MESSAGE_NAME)
+				if (name == REMOVE_MESSAGE_NAME)
 				{
 					remove();
 
@@ -298,70 +308,40 @@ namespace caspar {
 
 				return false;
 			}
-
-			void invoke_requested_animation_frames()
-			{
-				if (browser_)
-					browser_->SendProcessMessage(
-							CefProcessId::PID_RENDERER,
-							CefProcessMessage::Create(TICK_MESSAGE_NAME));
-				graph_->set_value("tick-time", tick_timer_.elapsed()
-						* frame_factory_->get_video_format_desc().fps
-						* frame_factory_->get_video_format_desc().field_count
-						* 0.5);
-				tick_timer_.restart();
-			}
-
-			bool try_pop(safe_ptr<core::basic_frame>& result)
-			{
-				return lock(frames_mutex_, [&]() -> bool
-				{
-					if (!frames_.empty())
-					{
-						result = frames_.front();
-						frames_.pop();
-
-						return true;
-					}
-
-					return false;
-				});
-			}
+			
 
 			safe_ptr<core::basic_frame> pop()
 			{
 				safe_ptr<core::basic_frame> frame;
 
-				if (!try_pop(frame))
+				if (!frames_.try_pop(frame))
 				{
 					BOOST_THROW_EXCEPTION(caspar_exception() << msg_info(narrow(print()) + "No frame in buffer"));
 				}
+
+				graph_->set_value("tick-time", tick_timer_.elapsed()
+					* frame_factory_->get_video_format_desc().fps
+					* frame_factory_->get_video_format_desc().field_count
+					* 0.5);
+				tick_timer_.restart();
 
 				return frame;
 			}
 
 			void update()
 			{
-				invoke_requested_animation_frames();
-
 				high_prec_timer timer;
 				timer.tick(0.0);
 				const auto& format_desc = frame_factory_->get_video_format_desc();
+				const auto num_frames = frames_.size();
 
-				auto num_frames = lock(frames_mutex_, [&]
-				{
-					return frames_.size();
-				});
-
-				if (num_frames >= format_desc.field_count)
+				if (num_frames >= static_cast<int>(format_desc.field_count))
 				{
 					if (format_desc.field_mode != core::field_mode::progressive)
 					{
 						auto frame1 = pop();
 
-						executor_.yield();
 						timer.tick(1.0 / (format_desc.fps * format_desc.field_count));
-						invoke_requested_animation_frames();
 
 						auto frame2 = pop();
 
@@ -374,7 +354,7 @@ namespace caspar {
 					else
 					{
 						auto frame = pop();
-
+						 
 						lock(last_frame_mutex_, [&]
 						{
 							last_frame_ = frame;
@@ -393,7 +373,6 @@ namespace caspar {
 					});
 
 					timer.tick(1.0 / (format_desc.fps * format_desc.field_count));
-					invoke_requested_animation_frames();
 				}
 				else
 				{
@@ -407,7 +386,6 @@ namespace caspar {
 						});
 
 						timer.tick(1.0 / (format_desc.fps * format_desc.field_count));
-						invoke_requested_animation_frames();
 					}
 				}
 			}
@@ -427,11 +405,6 @@ namespace caspar {
 
 				while (javascript_before_load_.try_pop(javascript))
 					do_execute_javascript(javascript);
-			}
-
-			std::wstring print() const
-			{
-				return L"html[" + url_ + L"]";
 			}
 
 			IMPLEMENT_REFCOUNTING(html_client);
@@ -456,13 +429,10 @@ namespace caspar {
 					client_ = new html_client(frame_factory, url_);
 
 					CefWindowInfo window_info;
-
-					window_info.SetTransparentPainting(TRUE);
-					window_info.SetAsOffScreen(nullptr);
-					//window_info.SetAsWindowless(nullptr, true);
+					window_info.SetAsWindowless(nullptr, true);
 					
 					CefBrowserSettings browser_settings;
-					browser_settings.web_security = cef_state_t::STATE_DISABLED;
+					browser_settings.windowless_frame_rate = static_cast<int>(frame_factory->get_video_format_desc().fps) * frame_factory->get_video_format_desc().field_count;
 					CefBrowserHost::CreateBrowser(window_info, client_.get(), url, browser_settings, nullptr);
 				});
 			}
@@ -550,7 +520,9 @@ namespace caspar {
 
 			std::wstring print() const override
 			{
-				return L"html[" + url_ + L"]";
+				return client_ 
+					? client_->print()
+					: L"html[" + url_ + L"]";
 			}
 
 			boost::property_tree::wptree info() const override
