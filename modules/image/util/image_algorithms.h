@@ -75,7 +75,7 @@ std::vector<T> get_tweened_values(caspar::tweener_t& tweener, size_t num_values,
 
 	for (double t = 0; t < duration; ++t)
 	{
-		result.push_back(static_cast<T>(tweener(t, start, delta, duration - 1.0)));
+		result.push_back(static_cast<T>(tweener(t, start, delta, duration - 1.0,2)));
 	}
 
 	return std::move(result);

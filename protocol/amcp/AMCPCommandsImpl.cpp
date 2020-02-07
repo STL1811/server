@@ -1010,7 +1010,7 @@ bool RemoveCommand::DoExecute()
 		}
 
 		GetChannel()->output()->remove(index);
-
+		CASPAR_LOG(trace)<<L"Removed index: "<<index;
 		SetReplyString(TEXT("202 REMOVE OK\r\n"));
 
 		return true;
@@ -1212,7 +1212,8 @@ bool LoadbgCommand::DoExecute()
 	for(size_t n = 0; n < _parameters.size(); ++n)
 		message += _parameters[n] + L" ";
 		
-	static const boost::wregex expr(L".*(?<TRANSITION>CUT|PUSH|SLIDE|WIPE|MIX)\\s*(?<DURATION>\\d+)\\s*(?<TWEEN>(LINEAR)|(EASE[^\\s]*))?\\s*(?<DIRECTION>FROMLEFT|FROMRIGHT|LEFT|RIGHT)?.*");
+	static const boost::wregex expr(L".*(?<TRANSITION>CUTDELAYED|CUT|PUSH|SLIDE|WIPE|MIX)\\s*(?<DURATION>\\d+)\\s*(?<TWEEN>(LINEAR)|(EASE[^\\s]*)|CUTDELAYED|(BEZIER[^\\s]*))?\\s*(?<DIRECTION>FROMTOPLEFT|FROMTOPRIGHT|TOPLEFT|TOPRIGHT|FROMBOTTOMLEFT|FROMBOTTOMRIGHT|BOTTOMLEFT|BOTTOMRIGHT|FROMLEFT|FROMRIGHT|LEFT|RIGHT|FROMTOP|FROMBOTTOM|TOP|BOTTOM)?.*");
+
 	boost::wsmatch what;
 	if(boost::regex_match(message, what, expr))
 	{
@@ -1232,7 +1233,9 @@ bool LoadbgCommand::DoExecute()
 			transitionInfo.type = transition::slide;
 		else if(transition == TEXT("WIPE"))
 			transitionInfo.type = transition::wipe;
-		
+		else if (transition == TEXT("CUTDELAYED"))
+			transitionInfo.type = transition::cutdelayed;
+
 		if(direction == TEXT("FROMLEFT"))
 			transitionInfo.direction = transition_direction::from_left;
 		else if(direction == TEXT("FROMRIGHT"))
@@ -1241,6 +1244,33 @@ bool LoadbgCommand::DoExecute()
 			transitionInfo.direction = transition_direction::from_right;
 		else if(direction == TEXT("RIGHT"))
 			transitionInfo.direction = transition_direction::from_left;
+
+		else if(direction == TEXT("FROMTOP"))
+			transitionInfo.direction = transition_direction::from_top;
+		else if(direction == TEXT("FROMBOTTOM"))
+			transitionInfo.direction = transition_direction::from_bottom;
+		else if(direction == TEXT("TOP"))
+			transitionInfo.direction = transition_direction::from_bottom;
+		else if(direction == TEXT("BOTTOM"))
+			transitionInfo.direction = transition_direction::from_top;
+
+		else if(direction == TEXT("FROMTOPLEFT"))
+			transitionInfo.direction = transition_direction::from_topleft;
+		else if(direction == TEXT("FROMTOPRIGHT"))
+			transitionInfo.direction = transition_direction::from_topright;
+		else if(direction == TEXT("FROMBOTTOMLEFT"))
+			transitionInfo.direction = transition_direction::from_bottomleft;
+		else if(direction == TEXT("FROMBOTTOMRIGHT"))
+			transitionInfo.direction = transition_direction::from_bottomright;
+
+		else if(direction == TEXT("TOPLEFT"))
+			transitionInfo.direction = transition_direction::from_bottomright;
+		else if(direction == TEXT("TOPRIGHT"))
+			transitionInfo.direction = transition_direction::from_bottomleft;
+		else if(direction == TEXT("BOTTOMLEFT"))
+			transitionInfo.direction = transition_direction::from_topright;
+		else if(direction == TEXT("BOTTOMRIGHT"))
+			transitionInfo.direction = transition_direction::from_topleft;
 	}
 	
 	//Perform loading of the clip
@@ -1377,6 +1407,13 @@ bool PrintCommand::DoExecute()
 {
 	parameters params;
 	params.push_back(L"IMAGE");
+		// STL 20150918 : si on met un nom de fichier ou un répertoire avec un / et pas un \ (il faut que le répertoire existe) le fichier aura le nom fourni
+	if(_parameters.size() > 0) 
+	{
+		auto filename = _parameters.at(0);
+		params.push_back(filename);
+	}
+	// fin STL 20150918
 	GetChannel()->output()->add(create_consumer(params));
 		
 	SetReplyString(TEXT("202 PRINT OK\r\n"));
@@ -1440,6 +1477,9 @@ bool CGCommand::ValidateLayer(const std::wstring& layerstring) {
 
 bool CGCommand::DoExecuteAdd() {
 	//CG 1 ADD 0 "template_folder/templatename" [STARTLABEL] 0/1 [DATA]
+	
+//CG [video_channel:int]{-[layer:int]|-0} ADD [flash_layer:uint] [template:string] [play-on-load:0,1] [data] {[transition:CUT,MIX,PUSH,WIPE,SLIDE] [duration:uint] {[tween:string]|linear} {[direction:LEFT,RIGHT,TOP,BOTTOM,TOPLEFT,TOPRIGHT,BOTTOMLEFT,BOTTOMRIGHT]|RIGHT}|CUT 0}
+
 
 	int layer = 0;				//_parameters[1]
 //	std::wstring templateName;	//_parameters[2]
@@ -1541,6 +1581,13 @@ bool CGCommand::DoExecuteAdd() {
 		filename.append(extension);
 		std::vector<std::wstring> parameters = boost::assign::list_of<std::wstring>(filename);
 		auto producer = html::create_producer(GetChannel()->mixer()->get_frame_factory(GetLayerIndex(9999)), core::parameters(parameters));	
+		/*
+		transition_info transitionInfo;
+		transitionInfo.direction = transition_direction::from_left;
+		transitionInfo.duration = 100;
+		transitionInfo.tweener = get_tweener(L"linear");
+		transitionInfo.type = transition::push;
+		*/
 				
 		if (producer != core::frame_producer::empty())
 		{
@@ -1553,7 +1600,10 @@ bool CGCommand::DoExecuteAdd() {
 			{
 				producer->call((boost::wformat(L"PLAY %1%") % layer).str()).wait();
 			}
-			
+
+
+
+			//GetChannel()->stage()->load(GetLayerIndex(9999), pFP2);
 			GetChannel()->stage()->load(GetLayerIndex(9999), producer);
 			GetChannel()->stage()->play(GetLayerIndex(9999));
 
@@ -1582,7 +1632,16 @@ bool CGCommand::DoExecutePlay()
 		
 		try
 		{
+		/*			c'est un début de test pour faire les transitions sur les templates
+transition_info transitionInfo;
+		transitionInfo.direction = transition_direction::from_left;
+		transitionInfo.duration = 100;
+		transitionInfo.tweener = get_tweener(L"linear");
+		transitionInfo.type = transition::push;
+					auto pFP2 = create_transition_producer(GetChannel()->get_video_format_desc().field_mode, frame_producer::empty(), transitionInfo);
+					GetChannel()->stage()->load(GetLayerIndex(9999), pFP2);*/
 			GetChannel()->stage()->call(GetLayerIndex(9999), true, (boost::wformat(L"PLAY %1%") % layer).str()).wait();
+			//GetChannel()->stage()->play(GetLayerIndex(9999));
 		}
 		catch (const caspar::not_supported&)
 		{
@@ -2155,13 +2214,27 @@ bool InfoCommand::DoExecute()
 			// Needs to be extended for any file, not just flash.
 
 			auto filename = flash::find_template(env::template_folder() + _parameters.at(1));
-						
-			std::wstringstream str;
-			str << widen(flash::read_template_meta_info(filename));
-			boost::property_tree::wptree info;
-			boost::property_tree::xml_parser::read_xml(str, info, boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
+			if (filename!= L"")
+			{
 
-			boost::property_tree::xml_parser::write_xml(replyString, info, w);
+				std::wstringstream str;
+				str << widen(flash::read_template_meta_info(filename));
+				boost::property_tree::wptree info;
+				boost::property_tree::xml_parser::read_xml(str, info, boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
+
+				boost::property_tree::xml_parser::write_xml(replyString, info, w);
+			}
+			else
+			{
+				filename = html::find_template(env::template_folder() + _parameters.at(1));
+				std::wstringstream str;
+				str << widen(html::read_template_meta_info(filename));
+				boost::property_tree::wptree info;
+				boost::property_tree::xml_parser::read_xml(str, info, boost::property_tree::xml_parser::trim_whitespace | boost::property_tree::xml_parser::no_comments);
+
+				boost::property_tree::xml_parser::write_xml(replyString, info, w);
+			}
+
 		}
 		else if(_parameters.size() >= 1 && _parameters[0] == L"CONFIG")
 		{		
@@ -2318,7 +2391,13 @@ bool InfoCommand::DoExecute()
 	}
 
 	replyString << TEXT("\r\n");
-	SetReplyString(replyString.str());
+	// STL 20151027 suppression des traces d'info serveur
+/*	if (boost::starts_with(replyString.str(), L"201 INFO SERVER OK"))
+	{
+		CASPAR_LOG(trace)<<replyString.str();
+	}
+	else*/
+		SetReplyString(replyString.str());
 	return true;
 }
 

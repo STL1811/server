@@ -175,6 +175,8 @@ public:
 	{
 		boost::property_tree::wptree info;
 		info.add(L"type", L"cg-producer");
+		// STL 20180125 avant d'y mettre le nom, on peut au moins lui dire que c'est du flash
+		info.add(L"filename", L"flash");
 		return info;
 	}
 

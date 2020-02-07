@@ -31,6 +31,7 @@
 
 #include <core/video_format.h>
 
+#include <common/env.h>
 #include <common/diagnostics/graph.h>
 #include <common/concurrency/executor.h>
 #include <common/concurrency/future_util.h>
@@ -67,7 +68,11 @@ static const size_t MIN_BUFFER_COUNT    = 50;
 static const size_t MAX_BUFFER_SIZE     = 64 * 1000000;
 
 namespace caspar { namespace ffmpeg {
-		
+	struct interrupt_data {
+		DWORD timestamp_;
+		DWORD timeout_ms_;
+	};
+
 struct input::implementation : boost::noncopyable
 {		
 	const safe_ptr<diagnostics::graph>							graph_;
@@ -86,9 +91,11 @@ struct input::implementation : boost::noncopyable
 	tbb::atomic<size_t>											buffer_size_;
 		
 	executor													executor_;
-	
+	interrupt_data												interrupt_data_ ; //STL 20190228 :  ne pas rester bloqué sur un stream qui n'existe pas
+	uint32_t												timeout_;
 	explicit implementation(const safe_ptr<diagnostics::graph> graph, const std::wstring& filename, FFMPEG_Resource resource_type, bool loop, uint32_t start, uint32_t length, bool thumbnail_mode, const ffmpeg_producer_params& vid_params) 
 		: graph_(graph)
+		, timeout_(15)// STL le time out est de 15 secondes. je ne peux pas le mettre en parametres de la creation du produceur, car on ne peut pas dépasser 10 paramêtres dans le make_shared!!!!!
 		, format_context_(open_input(filename, resource_type, vid_params))		
 		, default_stream_index_(av_find_default_stream_index(format_context_.get()))
 		, filename_(filename)
@@ -97,7 +104,10 @@ struct input::implementation : boost::noncopyable
 		, thumbnail_mode_(thumbnail_mode)
 		, frame_number_(0)
 		, executor_(print())
+		
 	{
+		//timeout_ = env::properties().get(L"configuration.ffmpeg.timeout", 15);
+		//CASPAR_LOG(debug) <<"configuration\ffmpeg\timeout:"<< timeout_ <<" s";
 		if (thumbnail_mode_)
 			executor_.invoke([]
 			{
@@ -238,14 +248,43 @@ struct input::implementation : boost::noncopyable
 			}
 		});
 	}	
-
+// STL 20190228 callback pour interrompre le chargement (av_open) au bout de 15 secondes
+	static int interrupt_cb(void *ctx) 
+        { 
+            //DWORD *timestamp_ptr = reinterpret_cast<DWORD*>(ctx);
+			//if (((DWORD)(*timestamp_ptr))>0 && ((GetTickCount() - ((DWORD)(*timestamp_ptr))) >(timeout_*1000)))
+            
+			interrupt_data* interruptdata = reinterpret_cast<interrupt_data*>(ctx);
+ 
+            //timeout after 5 seconds of no activity
+			if (interruptdata->timestamp_>0 && (GetTickCount() - interruptdata->timestamp_ >interruptdata->timeout_ms_))
+			        return 1;
+            return 0;
+    } 
+// STL 20190228 modification de la fonction open pour appeler la callboack pour le timeout
 	safe_ptr<AVFormatContext> open_input(const std::wstring resource_name, FFMPEG_Resource resource_type, const ffmpeg_producer_params& vid_params)
 	{
-		AVFormatContext* weak_context = nullptr;
+		AVFormatContext* weak_context = avformat_alloc_context( );
+		interrupt_data_.timestamp_ = GetTickCount();
+		//interrupt_data_.timeout_ms_ = timeout_*1000;
+		interrupt_data_.timeout_ms_ = 15*1000;
+		//AVDictionary *format_options = NULL;
+			//av_dict_set(&format_options, "analyzeduration", "1500000", 0);
 
+			weak_context->interrupt_callback.callback = interrupt_cb;
+			
+			weak_context->interrupt_callback.opaque = &interrupt_data_;
+
+			//weak_context->timestamp = GetTickCount();
+			weak_context->flags|=AVFMT_FLAG_NONBLOCK;
 		switch (resource_type) {
 			case FFMPEG_FILE:
-				THROW_ON_ERROR2(avformat_open_input(&weak_context, narrow(resource_name).c_str(), nullptr, nullptr), resource_name);
+				if (THROW_ON_ERROR2(avformat_open_input(&weak_context, narrow(resource_name).c_str(), nullptr, nullptr), resource_name) !=0)
+				{
+					throw("Timeout exceed");
+				}
+				else interrupt_data_.timestamp_ = 0;
+				
 				break;
 			case FFMPEG_DEVICE: {
 				AVDictionary* format_options = NULL;
@@ -254,7 +293,12 @@ struct input::implementation : boost::noncopyable
 					av_dict_set(&format_options, (*it).name.c_str(), (*it).value.c_str(), 0);
 				}
 				AVInputFormat* input_format = av_find_input_format("dshow");
-				THROW_ON_ERROR2(avformat_open_input(&weak_context, narrow(resource_name).c_str(), input_format, &format_options), resource_name);
+				if (THROW_ON_ERROR2(avformat_open_input(&weak_context, narrow(resource_name).c_str(), input_format, &format_options), resource_name) !=0)
+				{
+					throw("Timeout exceed");
+				}
+				else interrupt_data_.timestamp_ = 0;
+
 				if (format_options != nullptr)
 				{
 					std::string unsupported_tokens = "";
@@ -276,7 +320,13 @@ struct input::implementation : boost::noncopyable
 				{
 					av_dict_set(&format_options, (*it).name.c_str(), (*it).value.c_str(), 0);
 				}
-				THROW_ON_ERROR2(avformat_open_input(&weak_context, narrow(resource_name).c_str(), nullptr, &format_options), resource_name);
+
+				if (THROW_ON_ERROR2(avformat_open_input(&weak_context, narrow(resource_name).c_str(), nullptr, &format_options), resource_name) != 0)
+				{
+					throw("Timeout exceed");
+				}
+				else interrupt_data_.timestamp_ = 0;
+
 				if (format_options != nullptr)
 				{
 					std::string unsupported_tokens = "";
@@ -293,6 +343,7 @@ struct input::implementation : boost::noncopyable
 				av_dict_free(&format_options);
 			} break;
 		};
+		
 		safe_ptr<AVFormatContext> context(weak_context, av_close_input_file);      
 		THROW_ON_ERROR2(avformat_find_stream_info(weak_context, nullptr), resource_name);
 		fix_meta_data(*context);
@@ -324,8 +375,8 @@ struct input::implementation : boost::noncopyable
         auto duration   = video_stream->duration;
         auto codec_time  = video_context->time_base;
         auto ticks     = video_context->ticks_per_frame;
-
-        if(video_stream->nb_frames == 0)
+		// STL 20190328 mieux vaut ne pas avoir l'info que de faire des divisions par zero>
+        if(video_stream->nb_frames == 0 && codec_time.num != 0 && stream_time.den !=0 && ticks !=0)
           video_stream->nb_frames = (duration*stream_time.num*codec_time.den)/(stream_time.den*codec_time.num*ticks);  
       }
     }

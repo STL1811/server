@@ -93,7 +93,8 @@ struct image_scroll_producer : public core::frame_producer
 		start_offset_x_ = 0;
 		start_offset_y_ = 0;
 
-		auto bitmap = load_image(filename_);
+		// STL 20180125 Gestion du Premultiply pour les TGA en source celui de l'image scroll est défini plus bas
+		auto bitmap = load_image(filename_, false);
 		FreeImage_FlipVertical(bitmap.get());
 
 		width_  = FreeImage_GetWidth(bitmap.get());

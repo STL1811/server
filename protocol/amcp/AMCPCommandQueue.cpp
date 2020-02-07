@@ -68,6 +68,9 @@ void AMCPCommandQueue::AddCommand(AMCPCommandPtr pCurrentCommand)
 	if(!pCurrentCommand)
 		return;
 
+	if(pCurrentCommand->GetScheduling() == ImmediatelyAndClear)
+		executor_.clear();
+
 	if(executor_.size() > 64)
 	{
 		try
@@ -101,7 +104,12 @@ void AMCPCommandQueue::AddCommand(AMCPCommandPtr pCurrentCommand)
 				}
 
 				if(pCurrentCommand->Execute()) 
-					CASPAR_LOG(debug) << "Executed command: " << print;
+				{
+					if (boost::starts_with(print, L"InfoCommand"))
+						CASPAR_LOG(trace) << "Executed command: " << print;
+					else
+						CASPAR_LOG(debug) << "Executed command: " << print;
+				}
 				else 
 					CASPAR_LOG(warning) << "Failed to execute command: " << print << L" on " << widen(executor_.name());
 			}

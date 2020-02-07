@@ -33,6 +33,9 @@
     <ClCompile Include="util\image_algorithms.cpp">
       <Filter>source\util</Filter>
     </ClCompile>
+    <ClCompile Include="producer\image_sequence_producer.cpp">
+      <Filter>source\producer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="producer\image_producer.h">
@@ -55,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="util\image_view.h">
       <Filter>source\util</Filter>
+    </ClInclude>
+    <ClInclude Include="producer\image_sequence_producer.h">
+      <Filter>source\producer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

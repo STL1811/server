@@ -23,6 +23,7 @@
 
 #include "producer/image_producer.h"
 #include "producer/image_scroll_producer.h"
+#include "producer/image_sequence_producer.h"
 #include "consumer/image_consumer.h"
 
 #include <core/parameters/parameters.h>
@@ -37,6 +38,7 @@ namespace caspar { namespace image {
 
 void init()
 {
+	core::register_producer_factory(create_sequence_producer);
 	core::register_producer_factory(create_scroll_producer);
 	core::register_producer_factory(create_producer);
 	core::register_thumbnail_producer_factory(create_thumbnail_producer);

@@ -40,7 +40,8 @@ struct transition
 		mix,
 		push,
 		slide,
-		wipe
+		wipe,
+		cutdelayed
 	};
 };
 
@@ -49,7 +50,14 @@ struct transition_direction
 	enum type
 	{
 		from_left = 1,
-		from_right
+		from_right , 
+		from_top, 
+		from_bottom,
+		from_topleft, 
+		from_topright, 
+		from_bottomleft,
+		from_bottomright
+
 	};
 };
 

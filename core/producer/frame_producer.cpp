@@ -66,7 +66,7 @@ public:
 	{
 		static auto destroyers = std::make_shared<tbb::concurrent_bounded_queue<std::shared_ptr<executor>>>();
 		static tbb::atomic<int> destroyer_count;
-
+		CASPAR_LOG(trace) << "destroy_producer_proxy: " << destroyer_count;
 		if (!destroy_producers_in_separate_thread())
 		{
 			try
@@ -89,6 +89,7 @@ public:
 
 		try
 		{
+			CASPAR_LOG(trace) << "Try Create destroyer: " << destroyer_count;
 			std::shared_ptr<executor> destroyer;
 			if(!destroyers->try_pop(destroyer))
 			{

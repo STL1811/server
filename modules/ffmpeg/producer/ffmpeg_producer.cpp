@@ -540,28 +540,35 @@ safe_ptr<core::frame_producer> create_producer(
 	auto length		= params.get(L"LENGTH", std::numeric_limits<uint32_t>::max());
 	auto filter_str = params.get(L"FILTER", L""); 	
 	auto custom_channel_order	= params.get(L"CHANNEL_LAYOUT", L"");
-
+	
 	boost::replace_all(filter_str, L"DEINTERLACE_BOB", L"YADIF=1:-1");
 	boost::replace_all(filter_str, L"DEINTERLACE", L"YADIF=0:-1");
 	
 	ffmpeg_producer_params vid_params;
 	bool haveFFMPEGStartIndicator = false;
+
 	for (size_t i = 0; i < params.size() - 1; ++i)
 	{
+		//CASPAR_LOG(trace) << i << L" "<<haveFFMPEGStartIndicator << L" "<<  params[i];
 		if (!haveFFMPEGStartIndicator && params[i] == L"--")
 		{
+			//CASPAR_LOG(trace) << L"haveFFMPEGStartIndicator";
 			haveFFMPEGStartIndicator = true;
 			continue;
 		}
 		if (haveFFMPEGStartIndicator)
 		{
+			//CASPAR_LOG(trace) << i<<  narrow(params.at_original(i));
 			auto name = narrow(params.at_original(i++)).substr(1);
+			//CASPAR_LOG(trace) << i<<  narrow(params.at_original(i));
 			auto value = narrow(params.at_original(i));
+			CASPAR_LOG(trace) << L"ffmpeg video param name:"<<  name << L" value:" << value;
+
 			vid_params.options.push_back(option(name, value));
 		}
 	}
 
-	
+	//vid_params.options.push_back(option("rtsp_transport", "tcp"));
 	return create_producer_destroy_proxy(make_safe<ffmpeg_producer>(frame_factory, filename, resource_type, filter_str, loop, start, length, false, custom_channel_order, vid_params));
 }
 
@@ -571,7 +578,7 @@ safe_ptr<core::frame_producer> create_thumbnail_producer(
 {		
 	static const std::vector<std::wstring> invalid_exts = boost::assign::list_of
 			(L".png")(L".tga")(L".bmp")(L".jpg")(L".jpeg")(L".gif")(L".tiff")(L".tif")(L".jp2")(L".jpx")(L".j2k")(L".j2c")(L".swf")(L".ct")
-			(L".wav")(L".mp3"); // audio shall not have thumbnails
+			(L".wav")(L".mp3")(L".txt")(L".bat")(L".xml")(L".json")(L".doc")(L".exe"); // STL 20190228 audio shall not have thumbnails,  image are already thumbnails, txt doc shall not have thumbnails
 	auto filename = probe_stem(env::media_folder() + L"\\" + params.at_original(0), invalid_exts);
 
 	if(filename.empty())
@@ -581,7 +588,7 @@ safe_ptr<core::frame_producer> create_thumbnail_producer(
 	auto start		= 0;
 	auto length		= std::numeric_limits<uint32_t>::max();
 	auto filter_str = L"";
-
+	
 	ffmpeg_producer_params vid_params;
 	return make_safe<ffmpeg_producer>(frame_factory, filename, FFMPEG_FILE, filter_str, loop, start, length, true, L"", vid_params);
 }

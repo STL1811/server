@@ -25,7 +25,10 @@
 
 namespace caspar {
 
-typedef std::function<double(double, double, double, double)> tweener_t;
+typedef std::function<double(double, double, double, double, int)> tweener_t;
 tweener_t get_tweener(std::wstring name = L"linear");
+double bezier_linear(double t, double b, double c, double d, double x0, double x1);
+double bezier_quadra(double t, double b, double c, double d, double x0, double x1, double x2);
+double bezier_cube(double t, double b, double c, double d, double x0, double x1, double x2, double x3);
 
 }

@@ -36,7 +36,8 @@
 
 namespace caspar { namespace image {
 
-std::shared_ptr<FIBITMAP> load_image(const std::wstring& filename)
+// STL 20180125 Gestion du Premultiply pour les TGA en source 
+std::shared_ptr<FIBITMAP> load_image(const std::wstring& filename, bool bPremultiply )
 {
 	if(!boost::filesystem::exists(filename))
 		BOOST_THROW_EXCEPTION(file_not_found() << boost::errinfo_file_name(narrow(filename)));
@@ -58,8 +59,9 @@ std::shared_ptr<FIBITMAP> load_image(const std::wstring& filename)
 			BOOST_THROW_EXCEPTION(invalid_argument() << msg_info("Unsupported image format."));			
 	}
 
-	//PNG-images need to be premultiplied with their alpha
-	if(fif == FIF_PNG)
+	// STL 20180125 Gestion du Premultiply pour les TGA en source 
+	//PNG-images need to be premultiplied with their alpha and some TARGA images too
+	if(fif == FIF_PNG || (bPremultiply && (fif == FIF_TARGA)))
 	{
 		image_view<bgra_pixel> original_view(FreeImage_GetBits(bitmap.get()), FreeImage_GetWidth(bitmap.get()), FreeImage_GetHeight(bitmap.get()));
 		premultiply(original_view);
@@ -68,9 +70,10 @@ std::shared_ptr<FIBITMAP> load_image(const std::wstring& filename)
 	return bitmap;
 }
 
-std::shared_ptr<FIBITMAP> load_image(const std::string& filename)
+// STL 20180125 Gestion du Premultiply pour les TGA en source 
+std::shared_ptr<FIBITMAP> load_image(const std::string& filename, bool bPremultiply )
 {
-	return load_image(widen(filename));
+	return load_image(widen(filename),  bPremultiply );
 }
 
 std::shared_ptr<FIBITMAP> load_png_from_memory(const void* memory_location, size_t size)

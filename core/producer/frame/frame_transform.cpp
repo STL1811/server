@@ -140,7 +140,8 @@ frame_transform frame_transform::operator*(const frame_transform &other) const
 
 double do_tween(double time, double source, double dest, double duration, const tweener_t& tweener)
 {
-	return tweener(time, source, dest-source, duration);
+	return tweener(time, source, dest-source, duration,2);
+
 };
 
 template<typename Rect>
@@ -163,6 +164,8 @@ void do_tween_corners(const corners& source, const corners& dest, corners& out, 
 
 frame_transform tween(double time, const frame_transform& source, const frame_transform& dest, double duration, const tweener_t& tweener)
 {	
+	//if (time>(duration -2))
+	//	CASPAR_LOG(debug) << "transition " << time << " - " << duration;
 	frame_transform result;	
 	result.volume				= do_tween(time, source.volume,					dest.volume,				duration, tweener);
 	result.brightness			= do_tween(time, source.brightness,				dest.brightness,			duration, tweener);

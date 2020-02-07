@@ -712,6 +712,13 @@ void FlashAxContainer::DestroyAxControl()
 
 	if ((!m_spUnknown) == false)
 		m_spUnknown.Release();
+
+	// STL 20160322
+	// sur les conseils de jaskie : https://github.com/CasparCG/Server/issues/357
+	// plantage tous les 24.8 jours de templates flash chargés sans déchargement.
+	// ajout de CoFreeUnusedLibrariesEx et 
+	//CoFreeUnusedLibrariesEx(INFINITE, 0);
+
 }
 
 bool FlashAxContainer::CheckForFlashSupport()

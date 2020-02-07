@@ -21,19 +21,40 @@
 
 #pragma once
 
-#include <core/producer/frame_producer.h>
+#ifdef _DEBUG
+#include <crtdbg.h>
+#endif
 
-#include <common/memory/safe_ptr.h>
+#define NOMINMAX
 
-#include <vector>
+#include <Windows.h>
+
+#include <algorithm>
+#include <array>
+#include <assert.h>
+#include <deque>
+#include <functional>
+#include <math.h>
+#include <memory>
+#include <queue>
 #include <string>
+#include <vector>
 
-namespace caspar { namespace html {
+#include <tbb/atomic.h>
+#include <tbb/concurrent_queue.h>
 
-safe_ptr<core::frame_producer> create_producer(
-	const safe_ptr<core::frame_factory>& frame_factory,
-	const core::parameters& params);
-std::wstring find_template(const std::wstring& template_name);
-std::string read_template_meta_info(const std::wstring& filename);
+#include <boost/assign.hpp>
+#include <boost/circular_buffer.hpp>
+#include <boost/timer.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+#include <boost/range.hpp>
+#include <boost/range/algorithm.hpp>
 
-}}
+#include "../common/memory/safe_ptr.h"
+#include "../common/utility/string.h"
+//#include "../common/concurrency/executor.h" // Can't include this due to MSVC lambda bug
+
+#include "../common/exception/exceptions.h"
+#include "../common/exception/win32_exception.h"
+#include "../common/log/Log.h"

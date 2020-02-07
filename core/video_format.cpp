@@ -67,6 +67,8 @@ const video_format_desc format_descs[video_format::count] =
 	DEFINE_VIDEOFORMATDESC(video_format::x1080i5000			,1920, 1080, 1920, 1080, field_mode::upper,			25,		1,		boost::assign::list_of(1920),							L"1080i5000"),
 	DEFINE_VIDEOFORMATDESC(video_format::x1080i5994			,1920, 1080, 1920, 1080, field_mode::upper,			30000,	1001,	boost::assign::list_of(1602)(1601)(1602)(1601)(1602),	L"1080i5994"),
 	DEFINE_VIDEOFORMATDESC(video_format::x1080i6000			,1920, 1080, 1920, 1080, field_mode::upper,			30,		1,		boost::assign::list_of(1600),							L"1080i6000"),
+// format de test pour skype. A supprimer plus tard
+	DEFINE_VIDEOFORMATDESC(video_format::x1080i6001			,1920, 1080, 1920, 1080, field_mode::upper,			30,		1,		boost::assign::list_of(320),							L"1080i6001"),
 	DEFINE_VIDEOFORMATDESC(video_format::x1080p2500			,1920, 1080, 1920, 1080, field_mode::progressive,	25,		1,		boost::assign::list_of(1920),							L"1080p2500"),
 	DEFINE_VIDEOFORMATDESC(video_format::x1080p2997			,1920, 1080, 1920, 1080, field_mode::progressive,	30000,	1001,	boost::assign::list_of(1602)(1601)(1602)(1601)(1602),	L"1080p2997"),
 	DEFINE_VIDEOFORMATDESC(video_format::x1080p3000			,1920, 1080, 1920, 1080, field_mode::progressive,	30,		1,		boost::assign::list_of(1600),							L"1080p3000"),
@@ -87,6 +89,11 @@ const video_format_desc format_descs[video_format::count] =
 	DEFINE_VIDEOFORMATDESC(video_format::x2160p2500			,3840, 2160, 3840, 2160, field_mode::progressive,	25,		1,		boost::assign::list_of(1920),							L"2160p2500"),
 	DEFINE_VIDEOFORMATDESC(video_format::x2160p2997			,3840, 2160, 3840, 2160, field_mode::progressive,	30000,	1001,	boost::assign::list_of(1602)(1601)(1602)(1601)(1602),	L"2160p2997"),
 	DEFINE_VIDEOFORMATDESC(video_format::x2160p3000			,3840, 2160, 3840, 2160, field_mode::progressive,	30,		1,		boost::assign::list_of(1600),							L"2160p3000"),
+	DEFINE_VIDEOFORMATDESC(video_format::x2160p5000			,3840, 2160, 3840, 2160, field_mode::progressive,   50,     1,		boost::assign::list_of(960),							L"2160p5000"),
+	DEFINE_VIDEOFORMATDESC(video_format::x2160p5994			,3840, 2160, 3840, 2160, field_mode::progressive,	60000,  1001,	boost::assign::list_of(1602)(1601)(1602)(1601)(1602),   L"2160p5994"),
+	DEFINE_VIDEOFORMATDESC(video_format::x2160p6000			,3840, 2160, 3840, 2160, field_mode::progressive,	60,     1,		boost::assign::list_of(800),							L"2160p6000"),
+
+
 
 	DEFINE_VIDEOFORMATDESC(video_format::x5760x1280p2500	,5760, 1280, 5760, 1280, field_mode::progressive,	25,		1,		boost::assign::list_of(1920),							L"5760x1280p2500"),
 	DEFINE_VIDEOFORMATDESC(video_format::x5760x1280p5000	,5760, 1280, 5760, 1280, field_mode::progressive,	50,		1,		boost::assign::list_of(960),							L"5760x1280p5000"),

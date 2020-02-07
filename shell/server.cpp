@@ -49,6 +49,7 @@
 #include <modules/newtek/newtek.h>
 #include <modules/image/image.h>
 #include <modules/image/consumer/image_consumer.h>
+#include <modules/SharedMem/SharedMem.h>
 
 #include <modules/oal/consumer/oal_consumer.h>
 #include <modules/bluefish/consumer/bluefish_consumer.h>
@@ -57,6 +58,7 @@
 #include <modules/ogl/consumer/ogl_consumer.h>
 #include <modules/ffmpeg/consumer/ffmpeg_consumer.h>
 #include <modules/ffmpeg/consumer/streaming_consumer.h>
+#include <modules/SharedMem/consumer/SharedMem_consumer.h>
 
 #include <protocol/amcp/AMCPProtocolStrategy.h>
 #include <protocol/cii/CIIProtocolStrategy.h>
@@ -152,6 +154,9 @@ struct server::implementation : boost::noncopyable
 
 		image::init();		  
 		CASPAR_LOG(info) << L"Initialized image module.";
+
+		SharedMem::init();		  
+		CASPAR_LOG(info) << L"Initialized SharedMem module.";
 
 		setup_channels(env::properties());
 		CASPAR_LOG(info) << L"Initialized channels.";
@@ -270,6 +275,8 @@ struct server::implementation : boost::noncopyable
 					on_consumer(ffmpeg::create_streaming_consumer(xml_consumer.second));						
 				else if (name == L"system-audio")
 					on_consumer(oal::create_consumer());
+				else if (name == L"SharedMem")
+					on_consumer(SharedMem::create_consumer(xml_consumer.second));
 				else if (name != L"<xmlcomment>")
 					CASPAR_LOG(warning) << "Invalid consumer: " << widen(name);	
 			}
@@ -405,18 +412,32 @@ struct server::implementation : boost::noncopyable
 	{
 		initial_media_info_thread_ = boost::thread([this]
 		{
-			for (boost::filesystem::recursive_directory_iterator iter(env::media_folder()), end; iter != end; ++iter)
+			try
 			{
-				if (running_)
+				for (boost::filesystem::recursive_directory_iterator iter(env::media_folder()), end; iter != end; ++iter)
 				{
-					CASPAR_LOG(trace) << L"Retrieving information about file " << iter->path();
-					media_info_repo_->get(iter->path().wstring());
+					try
+					{
+						if (running_)
+						{
+							CASPAR_LOG(trace) << L"Retrieving information about file " << iter->path();
+							media_info_repo_->get(iter->path().wstring());
+						}
+						else
+						{
+							CASPAR_LOG(info) << L"Initial media information retrieval aborted.";
+							return;
+						}
+					}
+					catch (...)
+					{
+						CASPAR_LOG_CURRENT_EXCEPTION();
+					}
 				}
-				else
-				{
-					CASPAR_LOG(info) << L"Initial media information retrieval aborted.";
-					return;
-				}
+			}
+			catch (...)
+			{
+				CASPAR_LOG_CURRENT_EXCEPTION();
 			}
 
 			CASPAR_LOG(info) << L"Initial media information retrieval finished.";

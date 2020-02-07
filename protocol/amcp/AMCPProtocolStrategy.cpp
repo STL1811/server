@@ -135,7 +135,11 @@ void AMCPProtocolStrategy::Parse(const TCHAR* pData, int charCount, ClientInfoPt
 void AMCPProtocolStrategy::ProcessMessage(const std::wstring& message, ClientInfoPtr& pClientInfo)
 {	
 	if(message.length() < 512)
-		CASPAR_LOG(info) << L"Received message from " << pClientInfo->print() << L": " << message << L"\\r\\n";
+		// STL 20151027 suppression des traces d'info serveur
+		if (message == TEXT("INFO SERVER"))
+			CASPAR_LOG(trace) << L"Received message from " << pClientInfo->print() << L": " << message << L"\\r\\n";
+		else
+			CASPAR_LOG(info) << L"Received message from " << pClientInfo->print() << L": " << message << L"\\r\\n";
 	else
 		CASPAR_LOG(info) << L"Received long message from " << pClientInfo->print() << L": " << message.substr(0, 510) << L" [...]\\r\\n";
 	
@@ -222,6 +226,8 @@ AMCPCommandPtr AMCPProtocolStrategy::InterpretCommandString(const std::wstring& 
 
 					if(commandSwitch == TEXT("/APP"))
 						pCommand->SetScheduling(AddToQueue);
+					else if(commandSwitch  == TEXT("/IMMF"))
+						pCommand->SetScheduling(ImmediatelyAndClear);
 				}
 
 				if(pCommand->NeedChannel())

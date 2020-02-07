@@ -55,6 +55,7 @@
 #include <modules/image/image.h>
 #include <modules/newtek/util/air_send.h>
 #include <modules/html/html.h>
+#include <modules/SharedMem/SharedMem.h>
 
 #include <common/env.h>
 #include <common/exception/win32_exception.h>
@@ -102,7 +103,16 @@ void setup_global_locale()
 void setup_console_window()
 {	 
 	auto hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	// STL 20190213 interdire de sélectionner à l'interieur de la fenêtre de la console pour windows 10
+	auto  hIn            = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD dwPreviousMode = 0;
+	if (hIn != INVALID_HANDLE_VALUE && GetConsoleMode(hIn, &dwPreviousMode)) {
+        dwPreviousMode &= ~ENABLE_QUICK_EDIT_MODE | ENABLE_EXTENDED_FLAGS; // disable quick edit mode
+        dwPreviousMode &= ENABLE_PROCESSED_INPUT | ~ENABLE_MOUSE_INPUT;    // allow mouse wheel scrolling
+        SetConsoleMode(hIn, dwPreviousMode);
+    }	
 
+	
 	// Disable close button in console to avoid shutdown without cleanup.
 	EnableMenuItem(GetSystemMenu(GetConsoleWindow(), FALSE), SC_CLOSE , MF_GRAYED);
 	DrawMenuBar(GetConsoleWindow());
@@ -156,7 +166,7 @@ void print_info()
 	CASPAR_LOG(info) << L"Bluefish " << caspar::bluefish::get_version();
 	BOOST_FOREACH(auto device, caspar::bluefish::get_device_list())
 		CASPAR_LOG(info) << L" - " << device;	
-	
+
 	CASPAR_LOG(info) << L"FreeImage "		<< caspar::image::get_version();
 	CASPAR_LOG(info) << L"FFMPEG-avcodec "  << caspar::ffmpeg::get_avcodec_version();
 	CASPAR_LOG(info) << L"FFMPEG-avformat " << caspar::ffmpeg::get_avformat_version();
@@ -166,6 +176,7 @@ void print_info()
 	CASPAR_LOG(info) << L"Flash "			<< caspar::flash::get_version();
 	CASPAR_LOG(info) << L"Template-Host "	<< caspar::flash::get_cg_version();
 	CASPAR_LOG(info) << L"NewTek iVGA "		<< (caspar::newtek::airsend::is_available() ? L"available" : L"unavailable (" + caspar::newtek::airsend::dll_name() + L")");
+	CASPAR_LOG(info) << L"SharedMem "			<< caspar::SharedMem::get_version();
 }
 
 LONG WINAPI UserUnhandledExceptionFilter(EXCEPTION_POINTERS* info)
@@ -210,7 +221,37 @@ struct init_t
 		CASPAR_LOG(info) << L"Uninitialized " << name << L" module.";
 	}
 };
+// STL 20190213 tentative d'interception du clic droit close dans la barre des tâches en cours
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
+{
+    switch (fdwCtrlType)
+    {
+	case CTRL_C_EVENT:
+        // CTRL-CLOSE: confirm that the user wants to exit. 
+    case CTRL_CLOSE_EVENT:
+        CASPAR_LOG(info) << "please use Q command to quit CasparCG Server.";
+		fflush (stdout);
+		return FALSE;
 
+        // Pass other signals to the next handler. 
+    case CTRL_BREAK_EVENT:
+        Beep(900, 200);
+        CASPAR_LOG(info) << "Ctrl-Break event";
+        return TRUE;
+
+    case CTRL_LOGOFF_EVENT:
+        Beep(1000, 200);
+        CASPAR_LOG(info) << "Ctrl-Logoff event";
+        return FALSE;
+
+    case CTRL_SHUTDOWN_EVENT:
+        CASPAR_LOG(info) << "please use Q command to quit CasparCG Server.";
+		return FALSE;
+
+    default:
+        return FALSE;
+    }
+}
 int main(int argc, char* argv[])
 {
 	if (!caspar::html::init())
@@ -220,6 +261,8 @@ int main(int argc, char* argv[])
 	
 	SetUnhandledExceptionFilter(UserUnhandledExceptionFilter);
 
+	SetConsoleCtrlHandler(CtrlHandler, TRUE);
+    
 	setup_global_locale();
 
 	std::wcout << L"Type \"q\" to close application." << std::endl;
@@ -240,7 +283,9 @@ int main(int argc, char* argv[])
 	#endif
 
 	// Increase process priotity.
-	SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+		// STL 20180125 il faut encore augmenter la priorité
+	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+		//SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
 
 	// Install structured exception handler.
 	caspar::win32_exception::ensure_handler_installed_for_thread("main-thread");

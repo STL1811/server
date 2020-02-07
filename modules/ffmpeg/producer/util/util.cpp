@@ -341,7 +341,11 @@ double read_fps(AVFormatContext& context, double fail_value)
 					
 		auto frame_rate_time_base = video_stream->avg_frame_rate;
 		std::swap(frame_rate_time_base.num, frame_rate_time_base.den);
- 
+		// STL 20190328 Si le frame rate est à 0, c'est qu'on ne le connait pas, et il vaut mieux utiliser le frame rate par défaut sinon, on se retrouve avec une division par 0 dans le frame_muxer
+		// il serait éventuellement possible d'utiliser le r_frame_rate, mais il est deviné et pas lu dans les data du flux. donc ...
+		if (frame_rate_time_base.num == 0) return fail_value;
+
+
 		if(is_sane_fps(frame_rate_time_base))
 		{
 			return static_cast<double>(frame_rate_time_base.den) / static_cast<double>(frame_rate_time_base.num);

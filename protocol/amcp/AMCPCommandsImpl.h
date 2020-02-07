@@ -147,6 +147,12 @@ class ClearCommand : public AMCPCommandBase<true, AddToQueue, 0>
 	std::wstring print() const { return L"ClearCommand";}
 	bool DoExecute();
 };
+class ImmediatelyClearCommand : public AMCPCommandBase<true, ImmediatelyAndClear, 0>
+{
+	std::wstring print() const { return L"ImmediatelyClearCommand";}
+	bool DoExecute();
+};
+
 
 class PrintCommand : public AMCPCommandBase<true, AddToQueue, 0>
 {

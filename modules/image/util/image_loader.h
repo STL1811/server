@@ -28,8 +28,10 @@
 
 namespace caspar { namespace image {
 
-std::shared_ptr<FIBITMAP> load_image(const std::string& filename);
-std::shared_ptr<FIBITMAP> load_image(const std::wstring& filename);
+// STL >> 20180125 Gestion du Premultiply pour les TGA en source 
+std::shared_ptr<FIBITMAP> load_image(const std::string& filename, bool bPremultiply);
+std::shared_ptr<FIBITMAP> load_image(const std::wstring& filename, bool bPremultiply);
+// STL << 20180125 Gestion du Premultiply pour les TGA en source 
 std::shared_ptr<FIBITMAP> load_png_from_memory(const void* memory_location, size_t size);
 
 }}

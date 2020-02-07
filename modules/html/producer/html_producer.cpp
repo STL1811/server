@@ -432,6 +432,7 @@ namespace caspar {
 					window_info.SetAsWindowless(nullptr, true);
 					
 					CefBrowserSettings browser_settings;
+					browser_settings.web_security = STATE_DISABLED;
 					browser_settings.windowless_frame_rate = static_cast<int>(frame_factory->get_video_format_desc().fps) * frame_factory->get_video_format_desc().field_count;
 					CefBrowserHost::CreateBrowser(window_info, client_.get(), url, browser_settings, nullptr);
 				});
@@ -503,7 +504,9 @@ namespace caspar {
 				}
 				else if (boost::regex_match(param, what, update_exp))
 				{
-					javascript = (boost::wformat(L"update(\"%1%\")") % boost::algorithm::replace_all_copy(boost::algorithm::trim_copy_if(what["VALUE"].str(), boost::is_any_of(" \"")), "\"", "\\\"")).str();
+					// STL 20151105 remplacement du retour chariot
+					 //boost::algorithm::replace_all_copy(what["VALUE"].str(), "\n", "\\n");
+					javascript = (boost::wformat(L"update(\"%1%\")") % boost::algorithm::replace_all_copy(boost::algorithm::trim_copy_if(boost::algorithm::replace_all_copy(what["VALUE"].str(),"\n"," "), boost::is_any_of(" \"")), "\"", "\\\"")).str();
 				}
 				else if (boost::regex_match(param, what, invoke_exp))
 				{
@@ -529,6 +532,8 @@ namespace caspar {
 			{
 				boost::property_tree::wptree info;
 				info.add(L"type", L"html-producer");
+				// STL 20151023
+				info.add (L"filename",url_);
 				return info;
 			}
 
@@ -537,6 +542,56 @@ namespace caspar {
 				return monitor_subject_;
 			}
 		};
+				std::wstring find_template(const std::wstring& template_name)
+		{
+			if(boost::filesystem::exists(template_name + L".html")) 
+				return template_name + L".html";
+	
+			return L"";
+		}
+
+		std::string read_template_meta_info(const std::wstring& filename)
+		{
+			auto file = std::fstream(filename, std::ios::in | std::ios::binary);
+
+			if(!file)
+				BOOST_THROW_EXCEPTION(file_read_error());
+	
+			char head[4] = {};
+			file.read(head, 3);
+	
+			std::vector<char> data;
+	
+			file.seekg(0, std::ios::end);   
+			data.reserve(static_cast<size_t>(file.tellg()));
+			file.seekg(0, std::ios::beg);
+
+		/*	if(strcmp(head, "CWS") == 0)
+			{
+				file.seekg(8, std::ios::beg);
+				std::copy((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>(), std::back_inserter(data));
+				data = decompress_one_file(data);
+			}
+			else
+			{
+				file.seekg(0, std::ios::end);   
+				data.reserve(static_cast<size_t>(file.tellg()));
+				file.seekg(0, std::ios::beg);
+
+				std::copy((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>(), std::back_inserter(data));
+			}
+	
+			std::string beg_str = "<template version";
+			std::string end_str = "</template>";
+			auto beg_it = std::find_end(data.begin(), data.end(), beg_str.begin(), beg_str.end());
+			auto end_it = std::find_end(beg_it, data.end(), end_str.begin(), end_str.end());
+	
+			if(beg_it == data.end() || end_it == data.end())
+				BOOST_THROW_EXCEPTION(file_read_error());
+		*/			
+			std::string template_info = "<template type=\"html\"></template>";
+			return template_info;
+		}
 
 		safe_ptr<core::frame_producer> create_producer(
 			const safe_ptr<core::frame_factory>& frame_factory,

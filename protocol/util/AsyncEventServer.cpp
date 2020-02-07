@@ -33,6 +33,7 @@
 #include <string>
 #include <algorithm>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 #if defined(_MSC_VER)
 #pragma warning (push, 1) // TODO: Legacy code, just disable warnings, will replace with boost::asio in future
@@ -449,7 +450,7 @@ bool ConvertWideCharToMultiByte(UINT codePage, const std::wstring& wideString, s
 
 void AsyncEventServer::DoSend(SocketInfo& socketInfo) {
 	//Locks the socketInfo-object so that no one else tampers with the sendqueue at the same time
-	tbb::mutex::scoped_lock lock(mutex_);
+	tbb::mutex::scoped_lock lock(socketInfo.mutex_);
 
 	while(!socketInfo.sendQueue_.empty() || socketInfo.currentlySending_.size() > 0) {
 		if(socketInfo.currentlySending_.size() == 0) {
@@ -490,8 +491,12 @@ void AsyncEventServer::DoSend(SocketInfo& socketInfo) {
 						CASPAR_LOG(info) << L"Sent message to " << socketInfo.host_.c_str() << L": " << socketInfo.sendQueue_.front().c_str();
 					}
 					else
-						CASPAR_LOG(info) << "Sent more than 512 bytes to " << socketInfo.host_.c_str();
-
+					{
+						if  (boost::starts_with(socketInfo.sendQueue_.front(), L"201 INFO SERVER"))
+							CASPAR_LOG(trace) << "Sent more than 512 bytes to " << socketInfo.host_.c_str();
+						else
+							CASPAR_LOG(info) << "Sent more than 512 bytes to " << socketInfo.host_.c_str();
+					}
 					socketInfo.currentlySending_.resize(0);
 					socketInfo.currentlySendingOffset_ = 0;
 					socketInfo.sendQueue_.pop();

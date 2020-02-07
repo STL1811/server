@@ -83,7 +83,9 @@ public:
 
 	T fetch_and_tick(int num)
 	{						
+		//STL 20200113 les transitions des Mixers correspondent à la moitié de la durée affichée en 1080i50, à confirmer pour les autres formats.=> finalement, ca correspond bien au nombre de trames défini dans le format du canal (50 pour 1080i50000, 25 pour 720p25000)
 		time_ = std::min(time_+num, duration_);
+		//time_ = std::min(time_+num, duration_*2+1);
 		return fetch();
 	}
 };

@@ -21,19 +21,14 @@
 
 #pragma once
 
-#include <core/producer/frame_producer.h>
-
-#include <common/memory/safe_ptr.h>
-
-#include <vector>
 #include <string>
+#include <vector>
 
-namespace caspar { namespace html {
+namespace caspar { namespace SharedMem {
 
-safe_ptr<core::frame_producer> create_producer(
-	const safe_ptr<core::frame_factory>& frame_factory,
-	const core::parameters& params);
-std::wstring find_template(const std::wstring& template_name);
-std::string read_template_meta_info(const std::wstring& filename);
+void init();
+
+std::wstring get_version();
+//std::vector<std::wstring> get_device_list();
 
 }}

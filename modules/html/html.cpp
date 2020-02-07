@@ -97,8 +97,12 @@ public:
 			return;
 
 		command_line->AppendSwitch("disable-web-security");
+// STL 20190228 pour pouvoir jouer des sites https avec des certificats autosognés
+		command_line->AppendSwitch("ignore-certificate-errors");
 		command_line->AppendSwitch("enable-media-stream");
 		command_line->AppendSwitchWithValue("js-flags", "--expose-gc");
+		// STL pour désactiver le son des pages html, je pense qu'il est possible d'utiliser l'option 
+		//command_line->AppendSwitch("mute-audio");
 
 
 		// Possible required flags.
@@ -149,7 +153,7 @@ bool init()
 
 	if (CefExecuteProcess(main_args, CefRefPtr<CefApp>(new renderer_application), nullptr) >= 0)
 		return false;
-
+	SetPriorityClass(main_args.instance, HIGH_PRIORITY_CLASS);
 	core::register_producer_factory(html::create_producer);
 
 	g_cef_executor.reset(new executor(L"cef"));

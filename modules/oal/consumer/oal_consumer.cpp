@@ -136,6 +136,47 @@ public:
 
 		return wrap_as_future(is_running_.load());
 	}
+
+	/* version Yaka : 
+		virtual boost::unique_future<bool> send(const safe_ptr<core::read_frame>& frame) override
+	{
+		std::shared_ptr<audio_buffer_16> buffer;
+
+		if (core::needs_rearranging(
+				frame->multichannel_view(),
+				channel_layout_,
+				channel_layout_.num_channels))
+		{
+			core::audio_buffer downmixed;
+			downmixed.resize(
+					frame->multichannel_view().num_samples() 
+							* channel_layout_.num_channels,
+					0);
+
+			auto dest_view = core::make_multichannel_view<int32_t>(
+					downmixed.begin(), downmixed.end(), channel_layout_);
+
+			core::rearrange_or_rearrange_and_mix(
+					frame->multichannel_view(),
+					dest_view,
+					core::default_mix_config_repository());
+
+			buffer = std::make_shared<audio_buffer_16>(
+					core::audio_32_to_16(downmixed));
+		}
+		else
+		{
+			buffer = std::make_shared<audio_buffer_16>(
+					core::audio_32_to_16(frame->audio_data()));
+		}
+
+		if (!input_.try_push(buffer))
+			graph_->set_tag("dropped-frame");
+
+
+		return wrap_as_future(is_running_.load());
+	}
+	*/
 	
 	virtual std::wstring print() const override
 	{

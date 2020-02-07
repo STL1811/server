@@ -128,7 +128,7 @@ struct frame_muxer::implementation : boost::noncopyable
 			bool thumbnail_mode,
 			const core::channel_layout& audio_channel_layout)
 		: display_mode_(display_mode::invalid)
-		, in_fps_(in_fps)
+		, in_fps_(in_fps) // STL on remet correctement
 		, format_desc_(frame_factory->get_video_format_desc())
 		, auto_transcode_(env::properties().get(L"configuration.auto-transcode", true))
 		, auto_deinterlace_(env::properties().get(L"configuration.auto-deinterlace", true))
@@ -146,6 +146,7 @@ struct frame_muxer::implementation : boost::noncopyable
 		// Note: Uses 1 step rotated cadence for 1001 modes (1602, 1602, 1601, 1602, 1601)
 		// This cadence fills the audio mixer most optimally.
 		boost::range::rotate(audio_cadence_, std::end(audio_cadence_)-1);
+		CASPAR_LOG(trace) << L"[frame_muxer STL] "<< in_fps;
 	}
 
 	void push(const std::shared_ptr<AVFrame>& video_frame, int hints)
@@ -184,7 +185,10 @@ struct frame_muxer::implementation : boost::noncopyable
 			}
 
 			if(!filter_ || display_mode_ == display_mode::invalid)
+			{
+				CASPAR_LOG(trace) << "display mode:"<< display_mode_<< " filter: "<<(!filter_?"No":"Yes") << " force_deinterlacing_:" << force_deinterlacing_ << " hints: "<< hints <<" auto_deinterlace_: "<<auto_deinterlace_<<" deinterlace_hint: "<<deinterlace_hint;
 				update_display_mode(video_frame, force_deinterlacing_);
+			}
 				
 			if(hints & core::frame_producer::ALPHA_HINT)
 				video_frame->format = make_alpha_format(video_frame->format);
@@ -228,9 +232,15 @@ struct frame_muxer::implementation : boost::noncopyable
 		{
 			boost::range::push_back(audio_streams_.back(), *audio);
 		}
-
+					/*CASPAR_LOG(trace)<<  L"audio_streams_.back().size():" <<audio_streams_.back().size() ;
+			CASPAR_LOG(trace)<<  L"audio_cadence_.front():" <<audio_cadence_.front() ;
+			CASPAR_LOG(trace)<<  L"audio_channel_layout_.num_channels:" <<audio_channel_layout_.num_channels ;
+			*/
 		if(audio_streams_.back().size() > 32*audio_cadence_.front() * audio_channel_layout_.num_channels)
+		{
 			BOOST_THROW_EXCEPTION(invalid_operation() << source_info("frame_muxer") << msg_info("audio-stream overflow. This can be caused by incorrect frame-rate. Check clip meta-data."));
+		}
+
 	}
 	
 	bool video_ready() const
@@ -339,7 +349,10 @@ struct frame_muxer::implementation : boost::noncopyable
 	core::audio_buffer pop_audio()
 	{
 		CASPAR_VERIFY(audio_streams_.front().size() >= audio_cadence_.front() * audio_channel_layout_.num_channels);
-
+			/*CASPAR_LOG(trace)<<  L"pop_audio audio_streams_.front().size():" <<audio_streams_.back().size() ;
+			CASPAR_LOG(trace)<<  L"pop_audio audio_cadence_.front():" <<audio_cadence_.front() ;
+			CASPAR_LOG(trace)<<  L"pop_audio audio_channel_layout_.num_channels:" <<audio_channel_layout_.num_channels ;
+			*/
 		auto begin = audio_streams_.front().begin();
 		auto end   = begin + (audio_cadence_.front() * audio_channel_layout_.num_channels);
 
@@ -401,6 +414,8 @@ struct frame_muxer::implementation : boost::noncopyable
 			
 		if(!filter_ || !boost::iequals(filter_->filter_str(), filter_str))
 		{
+			// STL problème des frame rate sur les flux envoyés par le TBS encoder
+			CASPAR_LOG(info) << L"[frame_muxer] " << display_mode::print(display_mode_) << L" " << print_mode(frame->width, frame->height, in_fps_, frame->interlaced_frame > 0);
 			filter_.reset(new filter(
 				frame->width, 
 				frame->height,

@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2010
+# Visual Studio Express 2012 for Windows Desktop
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "core\core.vcxproj", "{79388C20-6499-4BF6-B8B9-D8C33D7D4DDD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shell", "shell\shell.vcxproj", "{8C26C94F-8092-4769-8D84-DEA479721C5B}"
@@ -35,6 +35,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "newtek", "modules\newtek\newtek.vcxproj", "{29CCB0C0-A1B7-4C05-BFEC-486C9A0B78CE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "html", "modules\html\html.vcxproj", "{701A5E6E-DB53-4503-834D-263C6A18189A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sharedmem", "modules\SharedMem\SharedMem.vcxproj", "{253B5011-C9CB-4D96-9CE5-2ADBC1DEA95E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -148,6 +150,14 @@ Global
 		{701A5E6E-DB53-4503-834D-263C6A18189A}.Profile|Win32.Build.0 = Profile|Win32
 		{701A5E6E-DB53-4503-834D-263C6A18189A}.Release|Win32.ActiveCfg = Release|Win32
 		{701A5E6E-DB53-4503-834D-263C6A18189A}.Release|Win32.Build.0 = Release|Win32
+		{253B5011-C9CB-4D96-9CE5-2ADBC1DEA95E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{253B5011-C9CB-4D96-9CE5-2ADBC1DEA95E}.Debug|Win32.Build.0 = Debug|Win32
+		{253B5011-C9CB-4D96-9CE5-2ADBC1DEA95E}.Develop|Win32.ActiveCfg = Develop|Win32
+		{253B5011-C9CB-4D96-9CE5-2ADBC1DEA95E}.Develop|Win32.Build.0 = Develop|Win32
+		{253B5011-C9CB-4D96-9CE5-2ADBC1DEA95E}.Profile|Win32.ActiveCfg = Profile|Win32
+		{253B5011-C9CB-4D96-9CE5-2ADBC1DEA95E}.Profile|Win32.Build.0 = Profile|Win32
+		{253B5011-C9CB-4D96-9CE5-2ADBC1DEA95E}.Release|Win32.ActiveCfg = Release|Win32
+		{253B5011-C9CB-4D96-9CE5-2ADBC1DEA95E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -162,5 +172,6 @@ Global
 		{3E11FF65-A9DA-4F80-87F2-A7C6379ED5E2} = {C54DA43E-4878-45DB-B76D-35970553672C}
 		{29CCB0C0-A1B7-4C05-BFEC-486C9A0B78CE} = {C54DA43E-4878-45DB-B76D-35970553672C}
 		{701A5E6E-DB53-4503-834D-263C6A18189A} = {C54DA43E-4878-45DB-B76D-35970553672C}
+		{253B5011-C9CB-4D96-9CE5-2ADBC1DEA95E} = {C54DA43E-4878-45DB-B76D-35970553672C}
 	EndGlobalSection
 EndGlobal

@@ -110,6 +110,7 @@ struct transition_producer : public frame_producer
 																	case transition::slide:	return "slide";
 																	case transition::push:	return "push";
 																	case transition::cut:	return "cut";
+																	case transition::cutdelayed:	return "cutdelayed";
 																	default:				return "n/a";
 																	}
 																}();
@@ -148,56 +149,179 @@ struct transition_producer : public frame_producer
 		if(info_.type == transition::cut)		
 			return src_frame;
 										
-		const double delta1 = info_.tweener(current_frame_*2-1, 0.0, 1.0, info_.duration*2);
-		const double delta2 = info_.tweener(current_frame_*2, 0.0, 1.0, info_.duration*2);  
+		double delta1x = 0.0; 
+		double delta2x = 0.0;  
+		double delta1y = 0.0; 
+		double delta2y = 0.0; 
 
-		const double dir = info_.direction == transition_direction::from_left ? 1.0 : -1.0;		
-		
+
+		double hordir =0;
+		double verdir =0;
+		switch (info_.direction)
+		{
+		case transition_direction::from_left:
+			hordir = 1.0;
+			break;
+		case transition_direction::from_right:
+			hordir = -1.0;
+			break;
+		case transition_direction::from_top:
+			verdir = 1.0;
+			break;
+		case transition_direction::from_bottom:
+			verdir = -1.0;
+			break;
+		case transition_direction::from_topleft:
+			hordir = 1.0;
+			verdir = 1.0;
+			break;
+		case transition_direction::from_bottomright:
+			hordir = -1.0;
+			verdir = -1.0;
+			break;
+		case transition_direction::from_topright:
+			hordir = -1.0;
+			verdir = 1.0;
+			break;
+		case transition_direction::from_bottomleft:
+			hordir = 1.0;
+			verdir = -1.0;
+
+
+			break;
+		}
+
+		if (hordir != 0)
+		{
+			delta1x = info_.tweener(current_frame_*2-1, 0.0, 1.0, info_.duration*2, 0);
+			delta2x = info_.tweener(current_frame_*2, 0.0, 1.0, info_.duration*2, 0);  
+		}
+		if (verdir != 0)
+		{
+			delta1y = info_.tweener(current_frame_*2-1, 0.0, 1.0, info_.duration*2, 1);
+			delta2y = info_.tweener(current_frame_*2, 0.0, 1.0, info_.duration*2, 1);  
+		}
 		// For interlaced transitions. Seperate fields into seperate frames which are transitioned accordingly.
 		
 		auto s_frame1 = make_safe<basic_frame>(src_frame);
 		auto s_frame2 = make_safe<basic_frame>(src_frame);
 
-		s_frame1->get_frame_transform().volume = 0.0;
-		s_frame2->get_frame_transform().volume = 1.0-delta2;
-
 		auto d_frame1 = make_safe<basic_frame>(dest_frame);
 		auto d_frame2 = make_safe<basic_frame>(dest_frame);
-		
-		d_frame1->get_frame_transform().volume = 0.0;
-		d_frame2->get_frame_transform().volume = delta2;
 
-		if(info_.type == transition::mix)
+		if (info_.type == transition::cutdelayed)
 		{
-			d_frame1->get_frame_transform().opacity = delta1;	
-			d_frame1->get_frame_transform().is_mix = true;
-			d_frame2->get_frame_transform().opacity = delta2;
-			d_frame2->get_frame_transform().is_mix = true;
+			if (current_frame_  < (info_.duration  - 1))
+			{
+				d_frame1->get_frame_transform().clip_scale[0] = 0.0;
+				d_frame2->get_frame_transform().clip_scale[0] = 0.0;
+				d_frame1->get_frame_transform().volume = 0.0;
+				d_frame2->get_frame_transform().volume = 0.0;
+			}
+			else
+			{
+				d_frame1->get_frame_transform().clip_scale[0] = 1.0;
+				d_frame2->get_frame_transform().clip_scale[0] = 1.0;
+				d_frame1->get_frame_transform().volume = 1.0;
+				d_frame2->get_frame_transform().volume = 1.0;
+				CASPAR_LOG(debug) << "fin transition";
+			}
 
-			s_frame1->get_frame_transform().opacity = 1.0-delta1;	
-			s_frame1->get_frame_transform().is_mix = true;
-			s_frame2->get_frame_transform().opacity = 1.0-delta2;	
-			s_frame2->get_frame_transform().is_mix = true;
 		}
-		if(info_.type == transition::slide)
+		else
 		{
-			d_frame1->get_frame_transform().fill_translation[0] = (-1.0+delta1)*dir;	
-			d_frame2->get_frame_transform().fill_translation[0] = (-1.0+delta2)*dir;		
-		}
-		else if(info_.type == transition::push)
-		{
-			d_frame1->get_frame_transform().fill_translation[0] = (-1.0+delta1)*dir;
-			d_frame2->get_frame_transform().fill_translation[0] = (-1.0+delta2)*dir;
 
-			s_frame1->get_frame_transform().fill_translation[0] = (0.0+delta1)*dir;	
-			s_frame2->get_frame_transform().fill_translation[0] = (0.0+delta2)*dir;		
+			s_frame1->get_frame_transform().volume = 0.0;
+			s_frame2->get_frame_transform().volume = 1.0 - delta2x;
+
+
+			d_frame1->get_frame_transform().volume = 0.0;
+			d_frame2->get_frame_transform().volume = delta2x;
+
+			if (info_.type == transition::mix)
+			{
+				if (delta1x == 0.0)
+				{
+					d_frame1->get_frame_transform().opacity = delta1y;
+				}
+				else
+				{
+					d_frame1->get_frame_transform().opacity = delta1x;
+				}
+
+				d_frame1->get_frame_transform().is_mix = true;
+				if (delta2x == 0.0)
+				{
+					d_frame2->get_frame_transform().opacity = delta2y;
+
+				}
+				else
+				{
+					d_frame2->get_frame_transform().opacity = delta2x;
+				}
+				d_frame2->get_frame_transform().is_mix = true;
+
+
+				if (delta1x == 0.0)
+					s_frame1->get_frame_transform().opacity = 1.0 - delta1y;
+				else
+					s_frame1->get_frame_transform().opacity = 1.0 - delta1x;
+
+				s_frame1->get_frame_transform().is_mix = true;
+				if (delta2x == 0.0)
+					s_frame2->get_frame_transform().opacity = 1.0 - delta2y;
+				else
+					s_frame2->get_frame_transform().opacity = 1.0 - delta2x;
+				s_frame2->get_frame_transform().is_mix = true;
+			}
+			if (info_.type == transition::slide)
+			{
+				d_frame1->get_frame_transform().fill_translation[0] = (-1.0 + delta1x) * hordir;
+				d_frame2->get_frame_transform().fill_translation[0] = (-1.0 + delta2x) * hordir;
+
+				d_frame1->get_frame_transform().fill_translation[1] = (-1.0 + delta1y) * verdir;
+				d_frame2->get_frame_transform().fill_translation[1] = (-1.0 + delta2y) * verdir;
+
+			}
+			else if (info_.type == transition::push)
+			{
+				d_frame1->get_frame_transform().fill_translation[0] = (-1.0 + delta1x) * hordir;
+				d_frame2->get_frame_transform().fill_translation[0] = (-1.0 + delta2x) * hordir;
+				d_frame1->get_frame_transform().fill_translation[1] = (-1.0 + delta1y) * verdir;
+				d_frame2->get_frame_transform().fill_translation[1] = (-1.0 + delta2y) * verdir;
+
+				s_frame1->get_frame_transform().fill_translation[0] = (0.0 + delta1x) * hordir;
+				s_frame2->get_frame_transform().fill_translation[0] = (0.0 + delta2x) * hordir;
+				s_frame1->get_frame_transform().fill_translation[1] = (0.0 + delta1y) * verdir;
+				s_frame2->get_frame_transform().fill_translation[1] = (0.0 + delta2y) * verdir;
+			}
+			else if (info_.type == transition::wipe)
+			{
+				if (hordir == 1.0)
+				{
+					d_frame1->get_frame_transform().clip_scale[0] = delta1x;
+					d_frame2->get_frame_transform().clip_scale[0] = delta2x;
+				}
+				else if (hordir == -1.0)
+				{
+					d_frame1->get_frame_transform().clip_translation[0] = 1.0 - delta1x;
+					d_frame2->get_frame_transform().clip_translation[0] = 1.0 - delta2x;
+
+				}
+
+				if (verdir == 1.0)
+				{
+					d_frame1->get_frame_transform().clip_scale[1] = delta1y;
+					d_frame2->get_frame_transform().clip_scale[1] = delta2y;
+				}
+				else if (verdir == -1.0)
+				{
+					d_frame1->get_frame_transform().clip_translation[1] = 1.0 - delta1y;
+					d_frame2->get_frame_transform().clip_translation[1] = 1.0 - delta2y;
+
+				}
+			}
 		}
-		else if(info_.type == transition::wipe)		
-		{
-			d_frame1->get_frame_transform().clip_scale[0] = delta1;	
-			d_frame2->get_frame_transform().clip_scale[0] = delta2;			
-		}
-				
 		const auto s_frame = s_frame1->get_frame_transform() == s_frame2->get_frame_transform() ? s_frame2 : basic_frame::interlace(s_frame1, s_frame2, mode_);
 		const auto d_frame = d_frame1->get_frame_transform() == d_frame2->get_frame_transform() ? d_frame2 : basic_frame::interlace(d_frame1, d_frame2, mode_);
 		

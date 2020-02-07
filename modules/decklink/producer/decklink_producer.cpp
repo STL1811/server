@@ -325,6 +325,11 @@ public:
 	{
 		return model_name_ + L" [" + boost::lexical_cast<std::wstring>(device_index_) + L"|" + format_desc_.name + L"]";
 	}
+	// STL 20151022 mettre le No du device dans les remontées
+	std::wstring get_device_index() const
+	{
+		return boost::lexical_cast<std::wstring>(device_index_) ;
+	}
 
 	core::monitor::subject& monitor_output()
 	{
@@ -384,6 +389,10 @@ public:
 	{
 		boost::property_tree::wptree info;
 		info.add(L"type", L"decklink-producer");
+		// STL 20151022 mettre le No du device dans les remontées
+//		info.add(L"filename",	context_->get_device_index());//		boost::lexical_cast<std::wstring>(context_->device_index_));
+		info.add(L"device",	context_->get_device_index());
+
 		return info;
 	}
 

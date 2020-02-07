@@ -263,6 +263,7 @@ void rearrange(
 		const multichannel_view<SrcSampleT, SrcIter>& source,
 		multichannel_view<DstSampleT, DstIter>& destination)
 {
+	// si les layouts n'ont pas de nom
 	if (source.channel_layout().no_channel_names()
 			|| destination.channel_layout().no_channel_names())
 	{

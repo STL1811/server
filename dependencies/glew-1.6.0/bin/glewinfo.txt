@@ -4,8 +4,8 @@
 
 GLEW version 1.6.0
 Reporting capabilities of pixelformat 1
-Running on a Quadro FX 1700M/PCI/SSE2 from NVIDIA Corporation
-OpenGL version 3.3.0 is supported
+Running on a Quadro K2000/PCIe/SSE2 from NVIDIA Corporation
+OpenGL version 4.5.0 NVIDIA 385.90 is supported
 
 GL_VERSION_1_1:                                                OK 
 ---------------
@@ -329,7 +329,7 @@ GL_VERSION_4_0:                                                OK
   glBlendFunci:                                                OK
   glMinSampleShading:                                          OK
 
-GL_VERSION_4_1:                                                MISSING 
+GL_VERSION_4_1:                                                OK 
 ---------------
 
 GL_3DFX_multisample:                                           MISSING 
@@ -389,7 +389,7 @@ GL_AMD_sample_positions:                                       MISSING
 ------------------------
   glSetMultisamplefvAMD:                                       MISSING
 
-GL_AMD_seamless_cubemap_per_texture:                           MISSING 
+GL_AMD_seamless_cubemap_per_texture:                           OK 
 ------------------------------------
 
 GL_AMD_shader_stencil_export:                                  MISSING 
@@ -504,9 +504,9 @@ GL_ARB_blend_func_extended:                                    OK
   glBindFragDataLocationIndexed:                               OK
   glGetFragDataIndex:                                          OK
 
-GL_ARB_cl_event:                                               MISSING 
+GL_ARB_cl_event:                                               OK 
 ----------------
-  glCreateSyncFromCLeventARB:                                  MISSING
+  glCreateSyncFromCLeventARB:                                  OK
 
 GL_ARB_color_buffer_float:                                     OK 
 --------------------------
@@ -519,12 +519,12 @@ GL_ARB_copy_buffer:                                            OK
 -------------------
   glCopyBufferSubData:                                         OK
 
-GL_ARB_debug_output:                                           MISSING 
+GL_ARB_debug_output:                                           OK 
 --------------------
-  glDebugMessageCallbackARB:                                   MISSING
-  glDebugMessageControlARB:                                    MISSING
-  glDebugMessageInsertARB:                                     MISSING
-  glGetDebugMessageLogARB:                                     MISSING
+  glDebugMessageCallbackARB:                                   OK
+  glDebugMessageControlARB:                                    OK
+  glDebugMessageInsertARB:                                     OK
+  glGetDebugMessageLogARB:                                     OK
 
 GL_ARB_depth_buffer_float:                                     OK 
 --------------------------
@@ -539,12 +539,12 @@ GL_ARB_draw_buffers:                                           OK
 --------------------
   glDrawBuffersARB:                                            OK
 
-GL_ARB_draw_buffers_blend:                                     MISSING 
+GL_ARB_draw_buffers_blend:                                     OK 
 --------------------------
-  glBlendEquationSeparateiARB:                                 MISSING
-  glBlendEquationiARB:                                         MISSING
-  glBlendFuncSeparateiARB:                                     MISSING
-  glBlendFunciARB:                                             MISSING
+  glBlendEquationSeparateiARB:                                 OK
+  glBlendEquationiARB:                                         OK
+  glBlendFuncSeparateiARB:                                     OK
+  glBlendFunciARB:                                             OK
 
 GL_ARB_draw_elements_base_vertex:                              OK 
 ---------------------------------
@@ -553,7 +553,7 @@ GL_ARB_draw_elements_base_vertex:                              OK
   glDrawRangeElementsBaseVertex:                               OK
   glMultiDrawElementsBaseVertex:                               OK
 
-GL_ARB_draw_indirect:                                          OK [MISSING]
+GL_ARB_draw_indirect:                                          OK 
 ---------------------
   glDrawArraysIndirect:                                        OK
   glDrawElementsIndirect:                                      OK
@@ -615,29 +615,29 @@ GL_ARB_get_program_binary:                                     OK
   glProgramBinary:                                             OK
   glProgramParameteri:                                         OK
 
-GL_ARB_gpu_shader5:                                            MISSING 
+GL_ARB_gpu_shader5:                                            OK 
 -------------------
 
-GL_ARB_gpu_shader_fp64:                                        MISSING 
+GL_ARB_gpu_shader_fp64:                                        OK 
 -----------------------
   glGetUniformdv:                                              OK
-  glProgramUniform1dEXT:                                       MISSING
-  glProgramUniform1dvEXT:                                      MISSING
-  glProgramUniform2dEXT:                                       MISSING
-  glProgramUniform2dvEXT:                                      MISSING
-  glProgramUniform3dEXT:                                       MISSING
-  glProgramUniform3dvEXT:                                      MISSING
-  glProgramUniform4dEXT:                                       MISSING
-  glProgramUniform4dvEXT:                                      MISSING
-  glProgramUniformMatrix2dvEXT:                                MISSING
-  glProgramUniformMatrix2x3dvEXT:                              MISSING
-  glProgramUniformMatrix2x4dvEXT:                              MISSING
-  glProgramUniformMatrix3dvEXT:                                MISSING
-  glProgramUniformMatrix3x2dvEXT:                              MISSING
-  glProgramUniformMatrix3x4dvEXT:                              MISSING
-  glProgramUniformMatrix4dvEXT:                                MISSING
-  glProgramUniformMatrix4x2dvEXT:                              MISSING
-  glProgramUniformMatrix4x3dvEXT:                              MISSING
+  glProgramUniform1dEXT:                                       OK
+  glProgramUniform1dvEXT:                                      OK
+  glProgramUniform2dEXT:                                       OK
+  glProgramUniform2dvEXT:                                      OK
+  glProgramUniform3dEXT:                                       OK
+  glProgramUniform3dvEXT:                                      OK
+  glProgramUniform4dEXT:                                       OK
+  glProgramUniform4dvEXT:                                      OK
+  glProgramUniformMatrix2dvEXT:                                OK
+  glProgramUniformMatrix2x3dvEXT:                              OK
+  glProgramUniformMatrix2x4dvEXT:                              OK
+  glProgramUniformMatrix3dvEXT:                                OK
+  glProgramUniformMatrix3x2dvEXT:                              OK
+  glProgramUniformMatrix3x4dvEXT:                              OK
+  glProgramUniformMatrix4dvEXT:                                OK
+  glProgramUniformMatrix4x2dvEXT:                              OK
+  glProgramUniformMatrix4x3dvEXT:                              OK
   glUniform1d:                                                 OK
   glUniform1dv:                                                OK
   glUniform2d:                                                 OK
@@ -809,9 +809,9 @@ GL_ARB_robustness:                                             OK
   glGetnUniformuivARB:                                         OK
   glReadnPixelsARB:                                            OK
 
-GL_ARB_sample_shading:                                         MISSING 
+GL_ARB_sample_shading:                                         OK 
 ----------------------
-  glMinSampleShadingARB:                                       MISSING
+  glMinSampleShadingARB:                                       OK
 
 GL_ARB_sampler_objects:                                        OK 
 -----------------------
@@ -941,24 +941,24 @@ GL_ARB_shader_objects:                                         OK
   glUseProgramObjectARB:                                       OK
   glValidateProgramARB:                                        OK
 
-GL_ARB_shader_precision:                                       MISSING 
+GL_ARB_shader_precision:                                       OK 
 ------------------------
 
 GL_ARB_shader_stencil_export:                                  MISSING 
 -----------------------------
 
-GL_ARB_shader_subroutine:                                      MISSING 
+GL_ARB_shader_subroutine:                                      OK 
 -------------------------
-  glGetActiveSubroutineName:                                   MISSING
-  glGetActiveSubroutineUniformName:                            MISSING
-  glGetActiveSubroutineUniformiv:                              MISSING
-  glGetProgramStageiv:                                         MISSING
-  glGetSubroutineIndex:                                        MISSING
-  glGetSubroutineUniformLocation:                              MISSING
-  glGetUniformSubroutineuiv:                                   MISSING
-  glUniformSubroutinesuiv:                                     MISSING
+  glGetActiveSubroutineName:                                   OK
+  glGetActiveSubroutineUniformName:                            OK
+  glGetActiveSubroutineUniformiv:                              OK
+  glGetProgramStageiv:                                         OK
+  glGetSubroutineIndex:                                        OK
+  glGetSubroutineUniformLocation:                              OK
+  glGetUniformSubroutineuiv:                                   OK
+  glUniformSubroutinesuiv:                                     OK
 
-GL_ARB_shader_texture_lod:                                     MISSING 
+GL_ARB_shader_texture_lod:                                     OK 
 --------------------------
 
 GL_ARB_shading_language_100:                                   OK 
@@ -989,7 +989,7 @@ GL_ARB_sync:                                                   OK
   glIsSync:                                                    OK
   glWaitSync:                                                  OK
 
-GL_ARB_tessellation_shader:                                    OK [MISSING]
+GL_ARB_tessellation_shader:                                    OK 
 ---------------------------
   glPatchParameterfv:                                          OK
   glPatchParameteri:                                           OK
@@ -1001,7 +1001,7 @@ GL_ARB_texture_buffer_object:                                  OK
 -----------------------------
   glTexBufferARB:                                              OK
 
-GL_ARB_texture_buffer_object_rgb32:                            MISSING 
+GL_ARB_texture_buffer_object_rgb32:                            OK 
 -----------------------------------
 
 GL_ARB_texture_compression:                                    OK 
@@ -1014,7 +1014,7 @@ GL_ARB_texture_compression:                                    OK
   glCompressedTexSubImage3DARB:                                OK
   glGetCompressedTexImageARB:                                  OK
 
-GL_ARB_texture_compression_bptc:                               MISSING 
+GL_ARB_texture_compression_bptc:                               OK 
 --------------------------------
 
 GL_ARB_texture_compression_rgtc:                               OK 
@@ -1023,7 +1023,7 @@ GL_ARB_texture_compression_rgtc:                               OK
 GL_ARB_texture_cube_map:                                       OK 
 ------------------------
 
-GL_ARB_texture_cube_map_array:                                 MISSING 
+GL_ARB_texture_cube_map_array:                                 OK 
 ------------------------------
 
 GL_ARB_texture_env_add:                                        OK 
@@ -1041,7 +1041,7 @@ GL_ARB_texture_env_dot3:                                       OK
 GL_ARB_texture_float:                                          OK 
 ---------------------
 
-GL_ARB_texture_gather:                                         MISSING 
+GL_ARB_texture_gather:                                         OK 
 ----------------------
 
 GL_ARB_texture_mirrored_repeat:                                OK 
@@ -1057,7 +1057,7 @@ GL_ARB_texture_multisample:                                    OK
 GL_ARB_texture_non_power_of_two:                               OK 
 --------------------------------
 
-GL_ARB_texture_query_lod:                                      MISSING 
+GL_ARB_texture_query_lod:                                      OK 
 -------------------------
 
 GL_ARB_texture_rectangle:                                      OK 
@@ -1078,7 +1078,7 @@ GL_ARB_timer_query:                                            OK
   glGetQueryObjectui64v:                                       OK
   glQueryCounter:                                              OK
 
-GL_ARB_transform_feedback2:                                    OK [MISSING]
+GL_ARB_transform_feedback2:                                    OK 
 ---------------------------
   glBindTransformFeedback:                                     OK
   glDeleteTransformFeedbacks:                                  OK
@@ -1088,7 +1088,7 @@ GL_ARB_transform_feedback2:                                    OK [MISSING]
   glPauseTransformFeedback:                                    OK
   glResumeTransformFeedback:                                   OK
 
-GL_ARB_transform_feedback3:                                    OK [MISSING]
+GL_ARB_transform_feedback3:                                    OK 
 ---------------------------
   glBeginQueryIndexed:                                         OK
   glDrawTransformFeedbackStream:                               OK
@@ -1125,18 +1125,18 @@ GL_ARB_vertex_array_object:                                    OK
   glGenVertexArrays:                                           OK
   glIsVertexArray:                                             OK
 
-GL_ARB_vertex_attrib_64bit:                                    MISSING 
+GL_ARB_vertex_attrib_64bit:                                    OK 
 ---------------------------
-  glGetVertexAttribLdv:                                        MISSING
-  glVertexAttribL1d:                                           MISSING
-  glVertexAttribL1dv:                                          MISSING
-  glVertexAttribL2d:                                           MISSING
-  glVertexAttribL2dv:                                          MISSING
-  glVertexAttribL3d:                                           MISSING
-  glVertexAttribL3dv:                                          MISSING
-  glVertexAttribL4d:                                           MISSING
-  glVertexAttribL4dv:                                          MISSING
-  glVertexAttribLPointer:                                      MISSING
+  glGetVertexAttribLdv:                                        OK
+  glVertexAttribL1d:                                           OK
+  glVertexAttribL1dv:                                          OK
+  glVertexAttribL2d:                                           OK
+  glVertexAttribL2dv:                                          OK
+  glVertexAttribL3d:                                           OK
+  glVertexAttribL3dv:                                          OK
+  glVertexAttribL4d:                                           OK
+  glVertexAttribL4dv:                                          OK
+  glVertexAttribLPointer:                                      OK
 
 GL_ARB_vertex_blend:                                           MISSING 
 --------------------
@@ -2015,10 +2015,10 @@ GL_EXT_separate_shader_objects:                                OK
 GL_EXT_separate_specular_color:                                OK 
 -------------------------------
 
-GL_EXT_shader_image_load_store:                                MISSING 
+GL_EXT_shader_image_load_store:                                OK 
 -------------------------------
-  glBindImageTextureEXT:                                       MISSING
-  glMemoryBarrierEXT:                                          MISSING
+  glBindImageTextureEXT:                                       OK
+  glMemoryBarrierEXT:                                          OK
 
 GL_EXT_shadow_funcs:                                           OK 
 --------------------
@@ -2124,7 +2124,7 @@ GL_EXT_texture_rectangle:                                      MISSING
 GL_EXT_texture_sRGB:                                           OK 
 --------------------
 
-GL_EXT_texture_sRGB_decode:                                    MISSING 
+GL_EXT_texture_sRGB_decode:                                    OK 
 ---------------------------
 
 GL_EXT_texture_shared_exponent:                                OK 
@@ -2165,19 +2165,19 @@ GL_EXT_vertex_array:                                           OK
 GL_EXT_vertex_array_bgra:                                      OK 
 -------------------------
 
-GL_EXT_vertex_attrib_64bit:                                    MISSING 
+GL_EXT_vertex_attrib_64bit:                                    OK 
 ---------------------------
-  glGetVertexAttribLdvEXT:                                     MISSING
-  glVertexArrayVertexAttribLOffsetEXT:                         MISSING
-  glVertexAttribL1dEXT:                                        MISSING
-  glVertexAttribL1dvEXT:                                       MISSING
-  glVertexAttribL2dEXT:                                        MISSING
-  glVertexAttribL2dvEXT:                                       MISSING
-  glVertexAttribL3dEXT:                                        MISSING
-  glVertexAttribL3dvEXT:                                       MISSING
-  glVertexAttribL4dEXT:                                        MISSING
-  glVertexAttribL4dvEXT:                                       MISSING
-  glVertexAttribLPointerEXT:                                   MISSING
+  glGetVertexAttribLdvEXT:                                     OK
+  glVertexArrayVertexAttribLOffsetEXT:                         OK
+  glVertexAttribL1dEXT:                                        OK
+  glVertexAttribL1dvEXT:                                       OK
+  glVertexAttribL2dEXT:                                        OK
+  glVertexAttribL2dvEXT:                                       OK
+  glVertexAttribL3dEXT:                                        OK
+  glVertexAttribL3dvEXT:                                       OK
+  glVertexAttribL4dEXT:                                        OK
+  glVertexAttribL4dvEXT:                                       OK
+  glVertexAttribLPointerEXT:                                   OK
 
 GL_EXT_vertex_shader:                                          MISSING 
 ---------------------
@@ -2230,9 +2230,9 @@ GL_EXT_vertex_weighting:                                       MISSING
   glVertexWeightfEXT:                                          MISSING
   glVertexWeightfvEXT:                                         MISSING
 
-GL_EXT_x11_sync_object:                                        MISSING 
+GL_EXT_x11_sync_object:                                        OK [MISSING]
 -----------------------
-  glImportSyncEXT:                                             MISSING
+  glImportSyncEXT:                                             OK
 
 GL_GREMEDY_frame_terminator:                                   MISSING 
 ----------------------------
@@ -2462,48 +2462,48 @@ GL_NV_gpu_program4:                                            OK
   glProgramLocalParametersI4ivNV:                              OK
   glProgramLocalParametersI4uivNV:                             OK
 
-GL_NV_gpu_program5:                                            MISSING 
+GL_NV_gpu_program5:                                            OK 
 -------------------
 
-GL_NV_gpu_program_fp64:                                        MISSING 
+GL_NV_gpu_program_fp64:                                        OK 
 -----------------------
 
-GL_NV_gpu_shader5:                                             MISSING 
+GL_NV_gpu_shader5:                                             OK 
 ------------------
-  glGetUniformi64vNV:                                          MISSING
+  glGetUniformi64vNV:                                          OK
   glGetUniformui64vNV:                                         OK
-  glProgramUniform1i64NV:                                      MISSING
-  glProgramUniform1i64vNV:                                     MISSING
-  glProgramUniform1ui64NV:                                     MISSING
-  glProgramUniform1ui64vNV:                                    MISSING
-  glProgramUniform2i64NV:                                      MISSING
-  glProgramUniform2i64vNV:                                     MISSING
-  glProgramUniform2ui64NV:                                     MISSING
-  glProgramUniform2ui64vNV:                                    MISSING
-  glProgramUniform3i64NV:                                      MISSING
-  glProgramUniform3i64vNV:                                     MISSING
-  glProgramUniform3ui64NV:                                     MISSING
-  glProgramUniform3ui64vNV:                                    MISSING
-  glProgramUniform4i64NV:                                      MISSING
-  glProgramUniform4i64vNV:                                     MISSING
-  glProgramUniform4ui64NV:                                     MISSING
-  glProgramUniform4ui64vNV:                                    MISSING
-  glUniform1i64NV:                                             MISSING
-  glUniform1i64vNV:                                            MISSING
-  glUniform1ui64NV:                                            MISSING
-  glUniform1ui64vNV:                                           MISSING
-  glUniform2i64NV:                                             MISSING
-  glUniform2i64vNV:                                            MISSING
-  glUniform2ui64NV:                                            MISSING
-  glUniform2ui64vNV:                                           MISSING
-  glUniform3i64NV:                                             MISSING
-  glUniform3i64vNV:                                            MISSING
-  glUniform3ui64NV:                                            MISSING
-  glUniform3ui64vNV:                                           MISSING
-  glUniform4i64NV:                                             MISSING
-  glUniform4i64vNV:                                            MISSING
-  glUniform4ui64NV:                                            MISSING
-  glUniform4ui64vNV:                                           MISSING
+  glProgramUniform1i64NV:                                      OK
+  glProgramUniform1i64vNV:                                     OK
+  glProgramUniform1ui64NV:                                     OK
+  glProgramUniform1ui64vNV:                                    OK
+  glProgramUniform2i64NV:                                      OK
+  glProgramUniform2i64vNV:                                     OK
+  glProgramUniform2ui64NV:                                     OK
+  glProgramUniform2ui64vNV:                                    OK
+  glProgramUniform3i64NV:                                      OK
+  glProgramUniform3i64vNV:                                     OK
+  glProgramUniform3ui64NV:                                     OK
+  glProgramUniform3ui64vNV:                                    OK
+  glProgramUniform4i64NV:                                      OK
+  glProgramUniform4i64vNV:                                     OK
+  glProgramUniform4ui64NV:                                     OK
+  glProgramUniform4ui64vNV:                                    OK
+  glUniform1i64NV:                                             OK
+  glUniform1i64vNV:                                            OK
+  glUniform1ui64NV:                                            OK
+  glUniform1ui64vNV:                                           OK
+  glUniform2i64NV:                                             OK
+  glUniform2i64vNV:                                            OK
+  glUniform2ui64NV:                                            OK
+  glUniform2ui64vNV:                                           OK
+  glUniform3i64NV:                                             OK
+  glUniform3i64vNV:                                            OK
+  glUniform3ui64NV:                                            OK
+  glUniform3ui64vNV:                                           OK
+  glUniform4i64NV:                                             OK
+  glUniform4i64vNV:                                            OK
+  glUniform4ui64NV:                                            OK
+  glUniform4ui64vNV:                                           OK
 
 GL_NV_half_float:                                              MISSING [OK]
 -----------------
@@ -2646,7 +2646,7 @@ GL_NV_shader_buffer_load:                                      OK
   glUniformui64NV:                                             OK
   glUniformui64vNV:                                            OK
 
-GL_NV_tessellation_program5:                                   MISSING 
+GL_NV_tessellation_program5:                                   OK 
 ----------------------------
 
 GL_NV_texgen_emboss:                                           MISSING 
@@ -2665,7 +2665,7 @@ GL_NV_texture_compression_vtc:                                 OK
 GL_NV_texture_env_combine4:                                    OK 
 ---------------------------
 
-GL_NV_texture_expand_normal:                                   OK 
+GL_NV_texture_expand_normal:                                   MISSING 
 ----------------------------
 
 GL_NV_texture_multisample:                                     OK 
@@ -2703,15 +2703,15 @@ GL_NV_transform_feedback:                                      OK
   glTransformFeedbackAttribsNV:                                OK
   glTransformFeedbackVaryingsNV:                               OK
 
-GL_NV_transform_feedback2:                                     MISSING 
+GL_NV_transform_feedback2:                                     OK 
 --------------------------
-  glBindTransformFeedbackNV:                                   MISSING
-  glDeleteTransformFeedbacksNV:                                MISSING
-  glDrawTransformFeedbackNV:                                   MISSING
-  glGenTransformFeedbacksNV:                                   MISSING
-  glIsTransformFeedbackNV:                                     MISSING
-  glPauseTransformFeedbackNV:                                  MISSING
-  glResumeTransformFeedbackNV:                                 MISSING
+  glBindTransformFeedbackNV:                                   OK
+  glDeleteTransformFeedbacksNV:                                OK
+  glDrawTransformFeedbackNV:                                   OK
+  glGenTransformFeedbacksNV:                                   OK
+  glIsTransformFeedbackNV:                                     OK
+  glPauseTransformFeedbackNV:                                  OK
+  glResumeTransformFeedbackNV:                                 OK
 
 GL_NV_vdpau_interop:                                           MISSING 
 --------------------
@@ -2734,27 +2734,27 @@ GL_NV_vertex_array_range:                                      OK
 GL_NV_vertex_array_range2:                                     OK 
 --------------------------
 
-GL_NV_vertex_attrib_integer_64bit:                             MISSING 
+GL_NV_vertex_attrib_integer_64bit:                             OK 
 ----------------------------------
-  glGetVertexAttribLi64vNV:                                    MISSING
-  glGetVertexAttribLui64vNV:                                   MISSING
-  glVertexAttribL1i64NV:                                       MISSING
-  glVertexAttribL1i64vNV:                                      MISSING
-  glVertexAttribL1ui64NV:                                      MISSING
-  glVertexAttribL1ui64vNV:                                     MISSING
-  glVertexAttribL2i64NV:                                       MISSING
-  glVertexAttribL2i64vNV:                                      MISSING
-  glVertexAttribL2ui64NV:                                      MISSING
-  glVertexAttribL2ui64vNV:                                     MISSING
-  glVertexAttribL3i64NV:                                       MISSING
-  glVertexAttribL3i64vNV:                                      MISSING
-  glVertexAttribL3ui64NV:                                      MISSING
-  glVertexAttribL3ui64vNV:                                     MISSING
-  glVertexAttribL4i64NV:                                       MISSING
-  glVertexAttribL4i64vNV:                                      MISSING
-  glVertexAttribL4ui64NV:                                      MISSING
-  glVertexAttribL4ui64vNV:                                     MISSING
-  glVertexAttribLFormatNV:                                     MISSING
+  glGetVertexAttribLi64vNV:                                    OK
+  glGetVertexAttribLui64vNV:                                   OK
+  glVertexAttribL1i64NV:                                       OK
+  glVertexAttribL1i64vNV:                                      OK
+  glVertexAttribL1ui64NV:                                      OK
+  glVertexAttribL1ui64vNV:                                     OK
+  glVertexAttribL2i64NV:                                       OK
+  glVertexAttribL2i64vNV:                                      OK
+  glVertexAttribL2ui64NV:                                      OK
+  glVertexAttribL2ui64vNV:                                     OK
+  glVertexAttribL3i64NV:                                       OK
+  glVertexAttribL3i64vNV:                                      OK
+  glVertexAttribL3ui64NV:                                      OK
+  glVertexAttribL3ui64vNV:                                     OK
+  glVertexAttribL4i64NV:                                       OK
+  glVertexAttribL4i64vNV:                                      OK
+  glVertexAttribL4ui64NV:                                      OK
+  glVertexAttribL4ui64vNV:                                     OK
+  glVertexAttribLFormatNV:                                     OK
 
 GL_NV_vertex_buffer_unified_memory:                            OK 
 -----------------------------------
@@ -2853,20 +2853,20 @@ GL_NV_vertex_program3:                                         OK
 GL_NV_vertex_program4:                                         OK 
 ----------------------
 
-GL_NV_video_capture:                                           MISSING 
+GL_NV_video_capture:                                           OK 
 --------------------
-  glBeginVideoCaptureNV:                                       MISSING
-  glBindVideoCaptureStreamBufferNV:                            MISSING
-  glBindVideoCaptureStreamTextureNV:                           MISSING
-  glEndVideoCaptureNV:                                         MISSING
-  glGetVideoCaptureStreamdvNV:                                 MISSING
-  glGetVideoCaptureStreamfvNV:                                 MISSING
-  glGetVideoCaptureStreamivNV:                                 MISSING
-  glGetVideoCaptureivNV:                                       MISSING
-  glVideoCaptureNV:                                            MISSING
-  glVideoCaptureStreamParameterdvNV:                           MISSING
-  glVideoCaptureStreamParameterfvNV:                           MISSING
-  glVideoCaptureStreamParameterivNV:                           MISSING
+  glBeginVideoCaptureNV:                                       OK
+  glBindVideoCaptureStreamBufferNV:                            OK
+  glBindVideoCaptureStreamTextureNV:                           OK
+  glEndVideoCaptureNV:                                         OK
+  glGetVideoCaptureStreamdvNV:                                 OK
+  glGetVideoCaptureStreamfvNV:                                 OK
+  glGetVideoCaptureStreamivNV:                                 OK
+  glGetVideoCaptureivNV:                                       OK
+  glVideoCaptureNV:                                            OK
+  glVideoCaptureStreamParameterdvNV:                           OK
+  glVideoCaptureStreamParameterfvNV:                           OK
+  glVideoCaptureStreamParameterivNV:                           OK
 
 GL_OES_byte_coordinates:                                       MISSING 
 ------------------------

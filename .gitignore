@@ -87,8 +87,28 @@
 /modules/newtek/bin
 /modules/newtek/tmp
 /dependencies/cef
-/.vs
-/modules/SharedMem/tmp/Debug/*.pch
-/modules/SharedMem/tmp
-/modules/SharedMem
+/data
+/locales
+/log
+/media
+/templates
+/thumbnails
+/modules/SharedMem/tmp/Release
+/modules/SharedMem/bin/Debug
+/modules/SharedMem/bin/Release
+/modules/SharedMem/tmp/Debug
+/*.suo
+/modules/SharedMem/*.filters
+/protocol/util/AsyncEventServer.cpp.bak
 /shell/*.log
+/modules/SharedMem/producer/*.bak
+/modules/SharedMem/producer/SharedMem_producer - Copy.cpp
+/modules/ffmpeg/producer/ffmpeg_producer - Copy.cpp
+/modules/ffmpeg/producer/ffmpeg_producer - Copy.h
+/modules/ffmpeg/producer/input/input - Copy.cpp
+/modules/ffmpeg/producer/input/input - Copy.h
+/*.zip
+/modules/SharedMem/bin/Develop
+/modules/SharedMem/tmp/Develop
+/.vs/casparcg/v16
+/modules/SharedMem/*.user
